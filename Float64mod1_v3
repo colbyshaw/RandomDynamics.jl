@@ -1,0 +1,112 @@
+function modingOne_v2(num::Float64)
+    # Method 1: For positive numbers
+    # Method 2: For negative numbers (similar to 1 but a bit trickier)
+
+    # BUG (handled): For larger numbers that are evaluated with ....ek where k is the exponent on 10 (like 20000000 = 2e7), the string method does not work
+    # Instead, we can check if "e" is in there, evaluate the number after it, and take the decimal values past that number
+
+    reducedNumber::Float64 = 0.0
+
+    # If 0 <= num < 1 already, just return num
+    if num > 0 && num < 1
+        return num
+    end
+
+    # Possible Idea: Convert to a string, take out the digits before the decimal place, and return what's left back into Float64
+    strNum = string(num)
+    println(strNum) #Good
+    #println(typeof(strNum)) #Good
+
+    # Create blank array
+    newNumArray = [""]
+    for x in range(1, length(strNum) - 1)
+        push!(newNumArray,"")
+    end
+    println(newNumArray) #Good
+
+    # Replace each array with the character position of the given number
+    for i in range(1, length(strNum))
+        newNumArray[i] = string(strNum[i])
+    end
+    println(newNumArray) #Good
+
+    # Make all numbers up to the decimal point 0
+
+    # If the number is evaluated with ek (above explanation):
+    # 1. Make the first number a "0"
+    # 2. Make the "." a "0"
+    # 3. Make the first "k - 1" numbers "0"
+    # 4. Make the kth number "."
+    # 5. Replace the "e" and the powers after that with "0"
+    if "e" in newNumArray
+        indexE = 0
+        for indexing in range(1, length(newNumArray))
+            #println(indexing) #Good
+            if newNumArray[indexing] == "e"
+                indexE = indexing
+                #println(indexE) #Good
+            end
+        end
+        println(indexE) #Good
+        # Make this all the numbers after "e", NOT the first number 
+        exponentString = ""
+        for val in range(1, length(newNumArray))
+            if val > indexE
+                exponentString = exponentString * newNumArray[val]
+            end
+        end
+        println(exponentString) #Good
+        #println(typeof(exponentString)) #Good
+        newNumArray[1] = "0"
+        newNumArray[2] = "0"
+        for val in range(3, parse(Int64, exponentString) + 1)
+            newNumArray[val] = "0"
+        end
+        newNumArray[parse(Int64, exponentString) + 2] = "."
+        println(newNumArray) #Good
+
+        for takeAway in range(indexE, length(newNumArray))
+            newNumArray[takeAway] = "0"
+        end
+        println(newNumArray)
+
+    end
+
+    for j in range(1, length(newNumArray))
+        if newNumArray[j] != "."
+            newNumArray[j] = "0"
+        else
+            break
+        end
+    end
+    println(newNumArray) #Good
+
+    # Convert back to string
+    modString = ""
+    for val in newNumArray
+        modString = modString * val
+    end
+    println(modString) #Good
+
+    # Convert to Float64
+    reducedNumber = parse(Float64, modString)
+
+    # Return new number :)
+    return reducedNumber
+
+    # Let me know if you find any bugs!
+end
+
+# modingOne_v2(0000000.0902938984908973)
+# modingOne_v2(4.829382899)
+# modingOne_v2(29.767866720091)
+# modingOne_v2(193.2877930)
+# modingOne_v2(7182.8374983)
+# modingOne_v2(19974.78374673899)
+# modingOne_v2(240471.263)
+# modingOne_v2(3298387.811808)
+# modingOne_v2(78982258.27882788980) # Too many decimals
+# modingOne_v2(238978491.29)
+# modingOne_v2(9609204818.2768498838) # Too large/Too many decimals
+# modingOne_v2(23894788093.26893)
+# modingOne_v2(2289787257897798.2728) # Too large/Too many decimals 
