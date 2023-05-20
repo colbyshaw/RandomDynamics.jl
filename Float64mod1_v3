@@ -1,4 +1,4 @@
-function modingOne_v2(num::Float64)
+function modingOne_v3(num::Float64)
     # Method 1: For positive numbers
     # Method 2: For negative numbers (similar to 1 but a bit trickier)
 
@@ -97,16 +97,18 @@ function modingOne_v2(num::Float64)
     # Let me know if you find any bugs!
 end
 
-# modingOne_v2(0000000.0902938984908973)
-# modingOne_v2(4.829382899)
-# modingOne_v2(29.767866720091)
-# modingOne_v2(193.2877930)
-# modingOne_v2(7182.8374983)
-# modingOne_v2(19974.78374673899)
-# modingOne_v2(240471.263)
-# modingOne_v2(3298387.811808)
-# modingOne_v2(78982258.27882788980) # Too many decimals
-# modingOne_v2(238978491.29)
-# modingOne_v2(9609204818.2768498838) # Too large/Too many decimals
-# modingOne_v2(23894788093.26893)
-# modingOne_v2(2289787257897798.2728) # Too large/Too many decimals 
+# modingOne_v3(0000000.0902938984908973)
+# modingOne_v3(4.829382899)
+# modingOne_v3(29.767866720091)
+# modingOne_v3(193.2877930)
+# modingOne_v3(7182.8374983)
+# modingOne_v3(19974.78374673899)
+# modingOne_v3(240471.263)
+# modingOne_v3(3298387.811808)
+# modingOne_v3(78982258.27882788980) # Too many decimals
+# modingOne_v3(238978491.29)
+# modingOne_v3(9609204818.2768498838) # Too large/Too many decimals
+# modingOne_v3(23894788093.26893)
+# modingOne_v3(2289787257897798.2728) # Too large/Too many decimals 
+
+# The built-in Julia 
