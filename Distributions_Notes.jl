@@ -10,6 +10,9 @@ Random.seed!(123)
 d = Normal() # No parameters implies standard normal distribution
 p(x) = 1/sqrt(2π) * exp(-x^2/2) # generic function 
 
+# We can check paramaters of a univariate distribution d with params()
+params(d)
+ 
 # 1000 samples from above distribution
 # rand(distribution, sample size) creates a new array. 
 # rand!() takes an existing array and fills it with samples from the given distribution. For e.g.
@@ -17,7 +20,7 @@ p(x) = 1/sqrt(2π) * exp(-x^2/2) # generic function
 # z = zeros(5)
 # rand!(Normal(), z)
 
-x = rand(d, 10000) 
+x = rand(d, 100000) 
 
 histogram(x, normalize=:pdf, label=:"Sampled")
 plot!(p, label=:"Std. Normal Dist.", color=:red)
@@ -34,14 +37,11 @@ cdf.(Normal(), 0)
 y = rand(Binomial(10, .55), 100000) 
 histogram(y)
 
-# We can check paramaters of a univariate distribution d with params()
-params(d)
-
 ###########################
 ### Truncated Distributions
 ###########################
 
-# Normal Distrbution truncated to [0, inf]
+# Normal Distrbution truncated to [0, inf)
 trunk = truncated(Normal(), lower=0)
 histogram(rand(trunk, 100000), label="Truncated Normal Distribution", normalize=:pdf)
 
@@ -53,7 +53,7 @@ histogram(rand(trunk, 100000), label="Truncated Normal Distribution", normalize=
 Σ = [1.0 0.0; 0.0 1.0] 
 
 # 10 samples.
-x = zeros(2, 10)
+x = zeros(2, 1)
 mvn = MvNormal(μ, Σ)
 sample = rand!(mvn, x)
 
