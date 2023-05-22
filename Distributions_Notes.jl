@@ -58,7 +58,7 @@ mvn = MvNormal(μ, Σ)
 sample = rand!(mvn, x)
 
 # Note an easy way to write a matrix given data is by reshaping it.
-matrix_1 = reshape([2,1,9,4,3,5], (3,2))
+matrix_1 = reshape([2,1,9,4,3,5], (2, 3))
 matrix_2 = reshape([1,2,3], (3,1))
 
 # Note: To convolute two probability distributions d1 and d2, use convolve(d1::Distribution, d2::Distribution).
