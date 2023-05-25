@@ -1,5 +1,6 @@
 using Distributions
 
+# Type Random Dynamical System used for our package
 mutable struct RDS
     #= 
     Do we want to maybe write this so that we can use the "Range" package? This might be better though as
@@ -12,6 +13,7 @@ mutable struct RDS
     lawOfSamples::Distribution # If we only want to pull from the types of distributions from Distributions.jl (maybe write a different function?)
 end
 
+# Function for sampling our distribution
 function f(rds::RDS, x)
     # Define the vector of values we will return
     returningVector = Vector{Float64}(undef, length(x))
@@ -35,7 +37,7 @@ function f(rds::RDS, x)
         buffer = rand(rds.lawOfSamples, 1)
         samples[num] = buffer[1]
     end
-    println("Samples Values: $samples")
+    #println("Samples Values: $samples")
 
     #= Create the method 
         f: Ω₀ × M → M, (ω, x) ↦ f\_ω (x) 
