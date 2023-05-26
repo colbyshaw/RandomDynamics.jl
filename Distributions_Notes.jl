@@ -7,20 +7,21 @@ using Random, Distributions, Plots
 # Setting seed
 Random.seed!(123) 
 
-d = Normal() # No parameters implies standard normal distribution
+# Normal() No parameters implies standard normal distribution
 p(x) = 1/sqrt(2π) * exp(-x^2/2) # generic function 
 
 # We can check paramaters of a univariate distribution d with params()
-params(d)
- 
-# 1000 samples from above distribution
+params(Normal())
+
+# 100000 samples from above distribution
 # rand(distribution, sample size) creates a new array. 
 # rand!() takes an existing array and fills it with samples from the given distribution. For e.g.
 
 # z = zeros(5)
 # rand!(Normal(), z)
 
-x = rand(d, 100000) 
+
+x = rand(Normal(), 1000000) 
 
 histogram(x, normalize=:pdf, label=:"Sampled")
 plot!(p, label=:"Std. Normal Dist.", color=:red)
