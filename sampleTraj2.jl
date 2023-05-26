@@ -46,8 +46,9 @@ function sampleTraj(rds::RDS, n::Int64, x0)
 end
 
 # Testing the example that Colby used
+# Normal, Cauchy, Laplace, Gamma, InverseGamma
 rds = RDS(0, 1, 1, Normal())
-data = sampleTraj(rds, 1000, [0.1, 0.9, 0.2, 0.7])
+data = sampleTraj(rds, 250, [0.1, 0.9, 0.2, 0.7])
 
 w = Vector{Float64}()
 x = Vector{Float64}()
@@ -67,3 +68,7 @@ plot(w)
 plot!(x)
 plot!(y)
 plot!(z)
+#title!("$(rds.lawOfSamples) Distribution, 1000 Samples")
+title!("$(rds.lawOfSamples) Distribution, 250 Samples", titlefontsize=12)
+xlabel!("Iterations")
+ylabel!("Markov Chain")
