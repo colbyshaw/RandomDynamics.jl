@@ -38,6 +38,7 @@ function fω(ω::Float64, x, rds::RDS)
     index = 1
     for val in x
         returningVector[index] = mod(ω * val, rds.Mub)
+        #returningVector[index] = mod(ω + val, rds.Mub)
         #println(ω * x, mod(ω * val, rds.Mub))
         index += 1
     end
