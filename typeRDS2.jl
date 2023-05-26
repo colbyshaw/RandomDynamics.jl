@@ -20,16 +20,16 @@ function fω(ω::Float64, x, rds::RDS)
     returningVector = Vector{Float64}(undef, length(x))
 
     # Display the given parameters
-    println("M = [$(rds.Mlb), $(rds.Mub)]")
-    println("Dimension of Ω₀ = $(rds.Omega0Dim)")
+    #println("M = [$(rds.Mlb), $(rds.Mub)]")
+    #println("Dimension of Ω₀ = $(rds.Omega0Dim)")
 
-    # Need to check the dimension and the values of the input matches the phase space M, as x could be a vector
-    if rds.Omega0Dim != length(x)
-        return "The dimensions of the input are incorrect! x is dimension $(length(x)) while Ω₀ is dimension $(rds.Omega0Dim)"
-    end
+    # # Need to check the dimension and the values of the input matches the phase space M, as x could be a vector
+    # if rds.Omega0Dim != length(x)
+    #     return "The dimensions of the input are incorrect! x is dimension $(length(x)) while Ω₀ is dimension $(rds.Omega0Dim)"
+    # end
 
     # Want to print the type of distribution that "lawOfSamples" is for the RDS
-    println("Distribution: $(rds.lawOfSamples)")
+    #println("Distribution: $(rds.lawOfSamples)")
 
     #= Create the method 
         f: Ω₀ × M → M, (ω, x) ↦ f\_ω (x) 
