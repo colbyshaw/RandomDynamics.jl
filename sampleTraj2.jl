@@ -10,7 +10,7 @@ function sampleTraj(f, distr, n, x0)
 end
 
 # This is our main sampling method for our package using type RDS
-function sampleTraj(rds::RDS, n::Int64, x0)
+function sampleTraj(rds::RDS, n::Int64, x0, o::String)
     # Check if number of iterations inputted is sufficient
     if n < 0
         return "n is $n, but n must be a positive number of iterations!"
@@ -26,7 +26,7 @@ function sampleTraj(rds::RDS, n::Int64, x0)
     push!(markovProgression, x0)
     iteration = x0
     for sample in samples
-        iteration = fω(sample, iteration, rds)
+        iteration = fω(sample, iteration, rds, o)
         push!(markovProgression, iteration)
     end
     # index = 2
@@ -47,8 +47,8 @@ end
 
 # Testing the example that Colby used
 # Normal, Cauchy, Laplace, Gamma, InverseGamma
-rds = RDS(0, 1, 1, Normal())
-data = sampleTraj(rds, 250, [0.1, 0.9, 0.2, 0.7])
+rds = RDS(0, 1, 1, Cauchy())
+data = sampleTraj(rds, 100, [0.1, 0.9, 0.2, 0.7], "m")
 
 w = Vector{Float64}()
 x = Vector{Float64}()
@@ -69,6 +69,6 @@ plot!(x)
 plot!(y)
 plot!(z)
 #title!("$(rds.lawOfSamples) Distribution, 1000 Samples")
-title!("$(rds.lawOfSamples) Distribution, 250 Samples", titlefontsize=12)
+title!("$(rds.lawOfSamples) Distribution, 50 Samples", titlefontsize=12)
 xlabel!("Iterations")
 ylabel!("Markov Chain")
