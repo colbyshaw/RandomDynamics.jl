@@ -26,9 +26,6 @@ Note that 'fω' is a function modulo 1 so that Im(fω) ∈ M .
 
 """
 function fω(ω::Float64, X)
-    # Function implementation goes here
-end
-function fω(ω::Float64, X)
     newvec = Vector{Float64}()
     for x in X
         push!(newvec, mod(ω * x, 1))
