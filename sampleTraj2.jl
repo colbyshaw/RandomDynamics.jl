@@ -1,6 +1,6 @@
 using Distributions, StaticArrays, Plots
 
-include("typeRDS.jl")
+include("typeRDS2.jl")
 
 function sampleTraj(f, distr, n, x0)
     if n < 0
@@ -10,7 +10,7 @@ function sampleTraj(f, distr, n, x0)
 end
 
 # This is our main sampling method for our package using type RDS
-function sampleTraj(rds::RDS, n::Int64, x0, o::String)
+function sampleTraj(rds::RDS, n::Int64, x0, func::Function)
     # Check if number of iterations inputted is sufficient
     if n < 0
         return "n is $n, but n must be a positive number of iterations!"
@@ -26,7 +26,7 @@ function sampleTraj(rds::RDS, n::Int64, x0, o::String)
     push!(markovProgression, x0)
     iteration = x0
     for sample in samples
-        iteration = fω(sample, iteration, rds, o)
+        iteration = fω(sample, iteration, rds, func)
         push!(markovProgression, iteration)
     end
     # index = 2
@@ -47,8 +47,8 @@ end
 
 # Testing the example that Colby used
 # Normal, Cauchy, Laplace, Gamma, InverseGamma
-rds = RDS(0, 1, 1, Cauchy())
-data = sampleTraj(rds, 100, [0.1, 0.9, 0.2, 0.7], "m")
+rds = RDS(0, 1, 1, Normal())
+data = sampleTraj(rds, 100, [0.1, 0.9, 0.2, 0.7], operation::Function)
 
 w = Vector{Float64}()
 x = Vector{Float64}()
