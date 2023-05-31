@@ -25,10 +25,10 @@ Computes Xₖ₊₁ = fω(Xₖ).
 Note that 'fω' is a function modulo 1 so that Im(fω) ∈ M .
 
 """
-function fω(ω::Float64, X)
+function fω(ω::Float64, X, func::Function)
     newvec = Vector{Float64}()
     for x in X
-        push!(newvec, mod(ω * x, 1))
+        push!(newvec, mod(func(ω, x), 1))
     end
     return newvec
 
@@ -56,8 +56,9 @@ Returns sample trajectory of length n given an initial vector of data and random
 - `f': Random Dynamical System.
 - 'n': Length of trajectory.
 - 'x0': Initial data vector.
+- 'func': f_ω
 """
-function sampleTraj(f::RDS, n::Int64, x0) 
+function sampleTraj(f::RDS, n::Int64, x0, func::Function) 
     if n <= 0
         throw(DomainError(n, "The number of iterations, $n, must be nonnegative."))
     end
@@ -73,10 +74,12 @@ function sampleTraj(f::RDS, n::Int64, x0)
     curr = x0
 
     for ω in omegas
-        curr = fω(ω, curr)  # e.g. curr = x1 = f\_ω₁(x0)
+        curr = fω(ω, curr, func)  # e.g. curr = x1 = f\_ω₁(x0)
         push!(traj, curr)   # add Xₖ to traj
     end
 
     return traj
+
 end
+
 
