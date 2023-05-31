@@ -45,30 +45,32 @@ function sampleTraj(rds::RDS, n::Int64, x0, func::Function)
     return markovProgression
 end
 
-# Testing the example that Colby used
-# Normal, Cauchy, Laplace, Gamma, InverseGamma
-rds = RDS(0, 1, 1, Normal())
-data = sampleTraj(rds, 100, [0.1, 0.9, 0.2, 0.7], operation::Function)
+# # Testing the example that Colby used
+# # Normal, Cauchy, Laplace, Gamma, InverseGamma
+# rds = RDS(0, 1, 1, Laplace())
 
-w = Vector{Float64}()
-x = Vector{Float64}()
-y = Vector{Float64}()
-z = Vector{Float64}()
-for sample in data
-    push!(w, sample[1])
-    push!(x, sample[2])
-    push!(y, sample[3])
-    push!(z, sample[4])
-end
+# input = rand(rds.lawOfSamples, 10)
+# data = sampleTraj(rds, 100, input, operation::Function)
+# #data = sampleTraj(rds, 100, [0.1, 0.9, 0.2, 0.7], operation::Function)
 
-#println(x)
-#println(y)
+# w = Vector{Float64}()
+# x = Vector{Float64}()
+# y = Vector{Float64}()
+# z = Vector{Float64}()
+# for sample in data
+#     push!(w, sample[1])
+#     push!(x, sample[2])
+#     push!(y, sample[3])
+#     push!(z, sample[4])
+# end
 
-plot(w)
-plot!(x)
-plot!(y)
-plot!(z)
-#title!("$(rds.lawOfSamples) Distribution, 1000 Samples")
-title!("$(rds.lawOfSamples) Distribution, 50 Samples", titlefontsize=12)
-xlabel!("Iterations")
-ylabel!("Markov Chain")
+# #println(x)
+# #println(y)
+# plot(w)
+# plot!(x)
+# plot!(y)
+# plot!(z)
+# #title!("$(rds.lawOfSamples) Distribution, 1000 Samples")
+# title!("$(rds.lawOfSamples) Distribution, 100 Samples", titlefontsize=12)
+# xlabel!("Iterations")
+# ylabel!("Markov Chain")
