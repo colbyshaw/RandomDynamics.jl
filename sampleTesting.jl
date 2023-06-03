@@ -3,7 +3,6 @@
 ### Thank you Colby :)
 ###########
 
-include("typeRDS2.jl")
 include("sampleTraj2.jl")
 
 """

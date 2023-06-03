@@ -19,12 +19,10 @@ function operation(a, b)
     return a * b
 end
 
-
 # Function applied to a sample and an input
-# Note that the sampling is done now in sampleTraj instead
+# Note that the sampling is done now in sampleTraj
 # operFunc is the function passed in for our Markov chain progression
 # Must add optional parameters for the specific function being used
-# How can we deal with these parameters?
 function fω(ω::Float64, x, rds::RDS, func::Function)
 #function fω(ω::Float64, x, rds::RDS, o::String)
     # Define the vector of values we will return
@@ -60,5 +58,4 @@ function fω(ω::Float64, x, rds::RDS, func::Function)
     
     # Return the outputing vector
     return returningVector
-    
 end
