@@ -2,11 +2,7 @@
 ### RDS Type
 ############
 
-using Distributions, Intervals, Plots
-
-""" The R
-
-"""
+using Distributions, Intervals, Plots, StaticArrays, Observables
 
 struct RDS
     M::Interval                 # Phase Space M.
@@ -78,8 +74,62 @@ function sampleTraj(f::RDS, n::Int64, x0, func::Function)
         push!(traj, curr)   # add Xₖ to traj
     end
 
-    return traj
+    return SVector{n}(traj)
 
 end
 
+function timeseries(rds::RDS, fω::Function, ϕ::Function, x0, n::Int)
+    timeseries = Vector{}()
+    initTraj = sampleTraj(rds, n, x0, fω)
+    print(initTraj)
+    for pos in initTraj
+        tmp = Vector{Float64}()
+        for data in pos
+            push!(tmp, ϕ(data))
+        end
+        push!(timeseries, tmp)
+    end
+           
+    return SVector{n}(timeseries)
+end
+
+#function empiricalAverage(rds::RDS, fω::Function, ϕ::Function, x0, n::Int)
+#    tmp = zeros(length(x0))
+#    data = timeseries(rds, f, ϕ, x0, n)
+
+#    for i in eachindex(data)
+#        for j in eachindex(data[i])
+#            tmp[j] = data[i][j]
+#        end
+#    end
+    
+#    return SVector{length(x0)}(tmp / n)
+#end
+
+function empiricalAverage(traj::AbstractVector)
+    tmp = zeros(length(traj[1]))
+    
+    for i in eachindex(traj)
+        for j in eachindex(traj[1])
+            tmp[j] += traj[i][j]
+        end
+    end
+    
+    return SVector{length(tmp)}(tmp / n)
+end
+
+
+##############
+###Basic Tests
+##############
+
+rds = RDS(Interval{Closed, Closed}(0,1), 1, Normal())
+ϕ(x) = x + (1-x) * .5
+f(ω, x) = ω * x
+d = rand(truncated(Normal(), 0, 1), 1)
+#histogram(d)
+n = 10
+
+traj = timeseries(rds, f, ϕ, d, n)
+empiricalAverage(traj)
 
