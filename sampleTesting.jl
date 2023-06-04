@@ -3,7 +3,7 @@
 ### Thank you Colby :)
 ###########
 
-include("sampleTraj2.jl")
+include("secondaryObjectives.jl")
 
 """
     testing(x0::AbstractVector, distribution::Distribution, iterations::Int64)
@@ -45,7 +45,7 @@ iterations = 100
 function func(a, b)
     return a * b
 end
-samplesNum = 100
+samplesNum = 10
 distList = [Normal(), Cauchy(), Laplace(), Gamma(), InverseGamma(), Beta(), Erlang(), LogNormal()]
 for dist in distList
     x0 = rand(dist, samplesNum)
@@ -55,4 +55,14 @@ for dist in distList
     testing(x0, dist, iterations, func)
 end
 
+function φ(x)
+    return x + 3
+end
+
+x1 = rand(Normal(), samplesNum)
+
+randDynm = RDS(0, 1, 1, Normal())
+
+timeseries(randDynm, φ, x1, samplesNum, func)
+empiricalAverage(randDynm, φ, x1, samplesNum, func) # Seems to be close to 0.03 no matter the distribution (for large number of samples)!
 #testing(x0, dist, iterations, func)

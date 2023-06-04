@@ -1,4 +1,4 @@
-using Distributions, StaticArrays, Plots
+using StaticArrays, Plots
 
 include("typeRDS2.jl")
 
