@@ -4,6 +4,8 @@
 
 using Distributions, Intervals, Plots, StaticArrays, Observables
 
+include("TypeRDSDomain.jl")
+
 struct RDS
     M::Interval                 # Phase Space M.
     SampleSpaceDimension::Int   # Dimesnion of Ω₀    
@@ -81,7 +83,6 @@ end
 function timeseries(rds::RDS, fω::Function, ϕ::Function, x0, n::Int)
     timeseries = Vector{}()
     initTraj = sampleTraj(rds, n, x0, fω)
-    print(initTraj)
     for pos in initTraj
         tmp = Vector{Float64}()
         for data in pos
@@ -93,18 +94,18 @@ function timeseries(rds::RDS, fω::Function, ϕ::Function, x0, n::Int)
     return SVector{n}(timeseries)
 end
 
-#function empiricalAverage(rds::RDS, fω::Function, ϕ::Function, x0, n::Int)
-#    tmp = zeros(length(x0))
-#    data = timeseries(rds, f, ϕ, x0, n)
+function empiricalAverage(rds::RDS, fω::Function, ϕ::Function, x0, n::Int)
+    tmp = zeros(length(x0))
+    data = timeseries(rds, f, ϕ, x0, n)
 
-#    for i in eachindex(data)
-#        for j in eachindex(data[i])
-#            tmp[j] = data[i][j]
-#        end
-#    end
+    for i in eachindex(data[1])
+        for j in eachindex(data[i])
+            tmp[j] = data[i][j]
+        end
+    end
     
-#    return SVector{length(x0)}(tmp / n)
-#end
+    return SVector{length(x0)}(tmp / n)
+end
 
 function empiricalAverage(traj::AbstractVector)
     tmp = zeros(length(traj[1]))
@@ -117,19 +118,3 @@ function empiricalAverage(traj::AbstractVector)
     
     return SVector{length(tmp)}(tmp / n)
 end
-
-
-##############
-###Basic Tests
-##############
-
-rds = RDS(Interval{Closed, Closed}(0,1), 1, Normal())
-ϕ(x) = x + (1-x) * .5
-f(ω, x) = ω * x
-d = rand(truncated(Normal(), 0, 1), 1)
-#histogram(d)
-n = 10
-
-traj = timeseries(rds, f, ϕ, d, n)
-empiricalAverage(traj)
-

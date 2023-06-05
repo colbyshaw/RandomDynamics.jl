@@ -79,4 +79,3 @@ function testing(x0::AbstractVector, distributions::Vector{Distribution{Univaria
         display(current())  # displays the plot associated with the distribution.
     end
 end
-
