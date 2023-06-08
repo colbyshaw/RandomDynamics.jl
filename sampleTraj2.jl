@@ -41,7 +41,7 @@ function sampleTraj(rds::RDS, n::Int64, x0, func::Function)
 
     # Sample all of our values according to the distribution of the ω's 
     samples = rand(rds.lawOfSamples, n)
-    println("Samples Values: $samples")
+    #println("Samples Values: $samples")
 
     # Where the Markov chain progress will be tracked
     markovProgression = Vector{}()

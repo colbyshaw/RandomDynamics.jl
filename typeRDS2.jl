@@ -1,4 +1,5 @@
 using Distributions
+# Organize the packages being used into a separate file for SysImage creation in the (near) future for optimization purposes
 
 # Type Random Dynamical System used for our package
 mutable struct RDS
