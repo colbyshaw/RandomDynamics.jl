@@ -4,6 +4,8 @@
 
 include("TypeRDS.jl")
 
+using Statistics
+
 
 """
     testing(x0::AbstractVector, distribution::Distribution, iterations::Int64)
@@ -79,3 +81,23 @@ function testing(x0::AbstractVector, distributions::Vector{Distribution{Univaria
         display(current())  # displays the plot associated with the distribution.
     end
 end
+
+function tracking(x0::AbstractVector, distribution::Distribution, func::Function, iterations::Int64)
+    rds = RDS(Interval{Closed, Closed}(0, 1), 1, distribution)
+    data = sampleTraj(rds, iterations, x0, func)
+   
+    # Record and display distribution evolution over time.
+    for i in eachindex(data)
+        plt = histogram(data[i], xlims=(0,1)) # Plot the values sampled above
+        display(plt)
+    end
+
+end
+
+function normal_samples(n)
+    samples = randn(n)  # Generate n samples from a standard normal distribution
+    transformed_samples = (samples .+ 3) ./ 6  # Transform samples to the interval [0, 1]
+    valid_samples = filter(x -> 0 ≤ x ≤ 1, transformed_samples)  # Filter out values outside [0, 1]
+    return valid_samples
+end
+

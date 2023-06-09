@@ -84,7 +84,7 @@ function timeseries(rds::RDS, fω::Function, ϕ::Function, x0, n::Int)
     timeseries = Vector{}()
     initTraj = sampleTraj(rds, n, x0, fω)
     for pos in initTraj
-        tmp = Vector{Float64}()
+        tmp = Vector{}()                # tmp = Vector{Float64}()
         for data in pos
             push!(tmp, ϕ(data))
         end
@@ -96,7 +96,7 @@ end
 
 function empiricalAverage(rds::RDS, fω::Function, ϕ::Function, x0, n::Int)
     tmp = zeros(length(x0))
-    data = timeseries(rds, f, ϕ, x0, n)
+    data = timeseries(rds, fω, ϕ, x0, n)
 
     for i in eachindex(data[1])
         for j in eachindex(data[i])
