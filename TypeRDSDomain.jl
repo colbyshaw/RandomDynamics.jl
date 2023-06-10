@@ -1,7 +1,3 @@
-##################
-### RDSDomain Type
-##################
-
 struct RDSDomain
     dim::Int
     modulo_coordinates::Vector{Int}
