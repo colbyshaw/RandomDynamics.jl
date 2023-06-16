@@ -8,7 +8,7 @@ using Statistics
 
 Plots the trajectory of an initial vector for a given distribution.
 
-# Arguments
+## Arguments
 - `x0`: An initial vector of data points.
 - `distribution`: A vector of possible distributions for a sample space Ω.
 - 'func': f_ω
@@ -44,7 +44,7 @@ end
 
 Plots the trajectory of an initial vector of data for each distribution provided in 'distributions'.
 
-# Arguments
+## Arguments
 - `x0`: An initial vector of data points.
 - `distributions`: A vector of possible distributions for a sample space Ω.
 - 'func': f_ω
@@ -79,45 +79,32 @@ function testing(x0::AbstractVector, distributions::Vector{Distribution{Univaria
 end
 
 """
-    tracking(x0::AbstractVector, distribution::Distribution, func::Function, iterations::Int64)
+    tracking(traj::AbstractVector)
 
 Tracks the evolution of the distributions of our states over time using a specified function, func (or fω).
 
-# Arguments
-- `x0': An initial vector of data points.
-- `distribution`: The distribution used to sample ω values in SampleTraj.
-- `func`: The function that maps the current state to the next state.
-- `iterations`: The number of iterations to track the distribution.
+## Argument
+- `trajectory`: Trajectory we are displaying.
 
-# Details
-It is best for x0 to be sampled from a dsitribution.
+## Details
+It is best for x0 to be sampled from a distribution.
 
 The distribution evolution over time is recorded and displayed by generating a histogram for each iteration.
 """
-function tracking(x0::AbstractVector, distribution::Distribution, func::Function, iterations::Int64)
-    rds = RDS(Interval{Closed, Closed}(0, 1), 1, distribution)
-    data = sampleTraj(rds, iterations, x0, func)
-   
+function tracking(traj::AbstractVector)
     # Record and display distribution evolution over time.
-    for i in eachindex(data)
-        plt = histogram(data[i], xlims=(0,1)) # Plot the values sampled above
+    for i in eachindex(traj)
+        plt = histogram(traj[i], xlims=(0,1)) # Plot the values sampled above
         display(plt)
     end
 end
-
-#function normal_samples(n)
-#    samples = randn(n)  # Generate n samples from a standard normal distribution
-#    transformed_samples = (samples .+ 3) ./ 6  # Transform samples to the interval [0, 1]
-#    valid_samples = filter(x -> 0 ≤ x ≤ 1, transformed_samples)  # Filter out values outside [0, 1]
-#    return valid_samples
-#end
 
 """
     sampling(n::Int, distribution::Distribution)
 
 Generate n valid samples from a specified distribution on the interval [0,1].
 
-# Arguments
+## Arguments
 - `n::Int`: The number of samples to generate.
 - `distribution::Distribution`: The distribution from which to generate the samples.
 """
@@ -127,3 +114,4 @@ function sampling(n::Int, distribution::Distribution)
     valid_samples = filter(x -> 0 ≤ x ≤ 1, transformed_samples)  # Filter out values outside [lower, upper]
     return valid_samples
 end
+
