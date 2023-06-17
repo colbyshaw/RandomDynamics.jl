@@ -11,7 +11,7 @@ Plots the trajectory of an initial vector for a given distribution.
 ## Arguments
 - `x0`: An initial vector of data points.
 - `distribution`: A vector of possible distributions for a sample space Ω.
-- 'func': f_ω
+- `func`: f_ω
 - `iterations`: Length of trajectory.
 """
 function testing(x0::AbstractVector, distribution::Distribution, func::Function, iterations::Int64)
@@ -47,7 +47,7 @@ Plots the trajectory of an initial vector of data for each distribution provided
 ## Arguments
 - `x0`: An initial vector of data points.
 - `distributions`: A vector of possible distributions for a sample space Ω.
-- 'func': f_ω
+- `func`: f_ω
 - `iterations`: Length of trajectory.
 """
 function testing(x0::AbstractVector, distributions::Vector{Distribution{Univariate, Continuous}}, func::Function, iterations::Int64)
@@ -94,7 +94,7 @@ The distribution evolution over time is recorded and displayed by generating a h
 function tracking(traj::AbstractVector)
     # Record and display distribution evolution over time.
     for i in eachindex(traj)
-        plt = histogram(traj[i], xlims=(0,1)) # Plot the values sampled above
+        plt = histogram(traj[i], xlims=(0,1), xlabel="Values", ylabel="Frequency") # Plot the values sampled above
         display(plt)
     end
 end
@@ -115,3 +115,13 @@ function sampling(n::Int, distribution::Distribution)
     return valid_samples
 end
 
+x0 = sampling(10000, Normal())
+rds = RDS(Interval{Closed, Closed}(0,1), 1, Normal())
+function f(ω::Float64, x::Float64) # Make plots to see which version is better!
+    return mod(ω, 1) * x
+end
+
+traj = sampleTraj(rds, 10, x0, f)
+
+histogram(x0, xlabel="Values", ylabel="Frequency")
+tracking(traj)
