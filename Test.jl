@@ -2,24 +2,18 @@ include("TypeRDS.jl")
 
 using Statistics
 
-
 """
     testing(x0::AbstractVector, distribution::Distribution, iterations::Int64)
 
 Plots the trajectory of an initial vector for a given distribution.
 
 ## Arguments
-- `x0`: An initial vector of data points.
-- `distribution`: A vector of possible distributions for a sample space Ω.
-- `func`: f_ω
-- `iterations`: Length of trajectory.
+- `traj`: Trajectory we are testing.
 """
-function testing(x0::AbstractVector, distribution::Distribution, func::Function, iterations::Int64)
-    rds = RDS(Interval{Closed, Closed}(0, 1), 1, distribution)
-    data = sampleTraj(rds, iterations, x0, func)
-    dataTraj = Vector{Vector{Float64}}(undef, length(x0))
+function testing(traj::AbstractVector)
+    dataTraj = Vector{Vector{Float64}}(undef, length(traj[1]))
 
-    plot(title=distribution, xlabel="Iterations", ylabel="Values", titlefontsize=10) # Format plot object.
+    plot(xlabel="Iterations", ylabel="Values", titlefontsize=10) # Format plot object.
 
     # Instantiates a vector of vectors to store trajectory of datapoints.
     for i in eachindex(dataTraj)
@@ -27,14 +21,14 @@ function testing(x0::AbstractVector, distribution::Distribution, func::Function,
     end
         
     # Fills vector of trajectories of datapoints.
-    for dataPoint in data
+    for dataPoint in traj
         for (i, point) in enumerate(dataPoint)
             push!(dataTraj[i], point)
         end
     end
 
     for i in eachindex(dataTraj)
-        plot!(dataTraj[i])
+        plot!(dataTraj[i], legend=false)
     end
     display(current())
 end
@@ -56,7 +50,7 @@ function testing(x0::AbstractVector, distributions::Vector{Distribution{Univaria
         data = sampleTraj(rds, iterations, x0, func)
         dataTraj = Vector{Vector{Float64}}(undef, length(x0))
 
-        plot(title=dist, xlabel="Iterations", ylabel="Values", titlefontsize=10) # Format plot object.
+        plot(title=dist, xlabel="Iterations", ylabel="Values") # Format plot object.
         
 
         # Instantiates a vector of vectors to store trajectory of datapoints.
@@ -72,7 +66,7 @@ function testing(x0::AbstractVector, distributions::Vector{Distribution{Univaria
         end
 
         for i in eachindex(dataTraj)
-            plot!(dataTraj[i])
+            plot!(dataTraj[i], legend=false)
         end
         display(current())  # displays the plot associated with the distribution.
     end
@@ -93,10 +87,9 @@ The distribution evolution over time is recorded and displayed by generating a h
 """
 function tracking(traj::AbstractVector)
     # Record and display distribution evolution over time.
-    for i in eachindex(traj)
-        plt = histogram(traj[i], xlims=(0,1), xlabel="Values", ylabel="Frequency") # Plot the values sampled above
-        display(plt)
-    end
+    @gif for i in eachindex(traj)
+        histogram(traj[i], xlims=(0,1), xlabel="Values", ylabel="Frequency") # Plot the values sampled above
+    end fps = 2
 end
 
 """
@@ -114,14 +107,3 @@ function sampling(n::Int, distribution::Distribution)
     valid_samples = filter(x -> 0 ≤ x ≤ 1, transformed_samples)  # Filter out values outside [lower, upper]
     return valid_samples
 end
-
-x0 = sampling(10000, Normal())
-rds = RDS(Interval{Closed, Closed}(0,1), 1, Normal())
-function f(ω::Float64, x::Float64) # Make plots to see which version is better!
-    return mod(ω, 1) * x
-end
-
-traj = sampleTraj(rds, 10, x0, f)
-
-histogram(x0, xlabel="Values", ylabel="Frequency")
-tracking(traj)

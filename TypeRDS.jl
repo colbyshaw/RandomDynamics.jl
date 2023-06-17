@@ -61,7 +61,7 @@ end
 Returns sample trajectory of length n given an initial vector of data and random dynamical system.
 
 ## Fields
-- `f`: Random Dynamical System.
+- `System`: Random Dynamical System.
 - `n`: Length of trajectory.
 - `x0`: Initial data vector.
 - `func`: f_ω
@@ -84,16 +84,17 @@ function sampleTraj(System::RDS, n::Int64, x0, func::Function)
     end
 
     traj = Vector{}()
+    push!(traj, x0)
     omegas = rand(System.LawOfSamples, n)    # [ω₁, ω₂, ⋯, ωₙ] 
     curr = x0
+
 
     for ω in omegas
         curr = fω(ω, curr, func)  # e.g. curr = x1 = f\_ω₁(x0)
         push!(traj, curr)   # add Xₖ to traj
     end
 
-    return SVector{n}(traj)
-
+    return SVector{n+1}(traj)
 end
 
 """
@@ -102,20 +103,17 @@ end
 Compute a time series of data points using the given random dynamical system (`rds`), functions `fω`, `ϕ`, an initial state `x0`, and a number of iterations `n`.
 
 ## Arguments
-- `rds`: A random dynamical system.
-- `fω`: A function representing the evolution of the system.
+- `traj`: Trajectory.
 - `ϕ`: A function to apply to each data point.
-- `x0`: The initial state of the system.
-- `n`: The number of iterations.
+
 
 ## Returns
 - `timeseries`: A time series of transformed data points.
 
 """
-function timeseries(rds::RDS, fω::Function, ϕ::Function, x0, n::Int)
+function timeseries(traj::AbstractVector, ϕ::Function)
     timeseries = Vector{}()
-    initTraj = sampleTraj(rds, n, x0, fω)
-    for pos in initTraj
+    for pos in traj
         tmp = Vector{}()  # tmp = Vector{Float64}()
         for data in pos
             push!(tmp, ϕ(data))
@@ -123,7 +121,7 @@ function timeseries(rds::RDS, fω::Function, ϕ::Function, x0, n::Int)
         push!(timeseries, tmp)
     end
            
-    return SVector{n}(timeseries)
+    return SVector{length(traj)}(timeseries)
 end
 
 """
@@ -171,5 +169,5 @@ function empiricalAverage(traj::AbstractVector)
         end
     end
     
-    return SVector{length(tmp)}(tmp / n)
+    return SVector{length(tmp)}(tmp / length(traj))
 end
