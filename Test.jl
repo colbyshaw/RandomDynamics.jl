@@ -89,7 +89,7 @@ function tracking(traj::AbstractVector)
     # Record and display distribution evolution over time.
     @gif for i in eachindex(traj)
         histogram(traj[i], xlims=(0,1), xlabel="Values", ylabel="Frequency") # Plot the values sampled above
-    end fps = 2
+    end fps = 1
 end
 
 """
