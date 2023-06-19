@@ -14,8 +14,6 @@ Functions:
 
 using Distributions, Intervals, Plots, StaticArrays
 
-include("TypeRDSDomain.jl")
-
 struct RDSDomain
     dim::Int
     modulo_coordinates::Vector{Int}

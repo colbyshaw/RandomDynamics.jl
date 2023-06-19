@@ -1,4 +1,4 @@
-include("TypeRDS.jl")
+include("rds.jl")
 
 using Statistics
 
