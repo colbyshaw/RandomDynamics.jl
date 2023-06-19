@@ -56,10 +56,17 @@ function testing2(x0::AbstractVector, distribution::Distribution, iterations::In
     end
         
     # Fills vector of trajectories of datapoints.
-    for dataPoint in data
-        for (i, point) in enumerate(dataPoint)
-            push!(dataTraj[i], point)
-        end
+    # Take the first value of each row in data and place into dataTraj
+    # for dataPoint in data
+    #     for (i, point) in enumerate(dataPoint)
+    #         push!(dataTraj[i], point)
+    #     end
+    # end
+    # I'm not sure why I can't take the first row of data and place it into the first vector of dataTraj
+    for i in 1:1:length(data)
+        #println(typeof(dataTraj[1]))
+        #println(typeof(data[1]))
+        dataTraj[i] = data[i]
     end
 
     # Graphs each of the histograms representing the values attained for the evolution of each starting value
@@ -73,8 +80,9 @@ end
 
 # Runner test (could be put in a "sampleRunner.jl" file eventually)
 iterations = 300
-function func(a, b)
-    return a * b
+# Performance increase by specifying the type input for function
+function func(a::Float64, b::Float64)
+    return mod(a, 1) * b
 end
 samplesNum = 300
 #distList = [Normal(), Cauchy(), Laplace(), Gamma(), InverseGamma(), Beta(), Erlang(), LogNormal()]
@@ -85,17 +93,17 @@ for dist in distList
         x0[i] = mod(x0[i], 1)
     end
     testing(x0, dist, iterations, func)
-    testing2(x0, dist, iterations, func)
+    #testing2(x0, dist, iterations, func)
     
     vals = rand(dist, samplesNum)
     # for j in eachindex(vals)
     #     vals[j] = mod(vals[j], 1)
     # end
-    plt = histogram(vals, label=:"Check", normalize=:pdf, bins=0:0.01:1) # Plot the values sampled above
-    display(plt)
+    #plt = histogram(vals, label=:"Check", normalize=:pdf, bins=0:0.01:1) # Plot the values sampled above
+    #display(plt)
 end
 
-function φ(x)
+function φ(x::Float64)
     return x + 3
 end
 
