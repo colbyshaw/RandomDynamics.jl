@@ -43,12 +43,13 @@ end
 
 # Need to ensure that we can track each portion of the trajectory so that the histograms can all be tracked at each step (for graphing purposes)
 # Do this by accessing the nth row and plotting it vs the actual PDF of the distribution the values were sampled from
-
 # Want to create a testing function to show the histogram of each trajectory in sampleTraj
+
+# This is broken :(
 function testing2(x0::AbstractVector, distribution::Distribution, iterations::Int64, func::Function)
     rds = RDS(0, 1, 1, distribution)
     data = sampleTraj(rds, iterations, x0, func)
-    dataTraj = Vector{Vector{Float64}}(undef, length(x0))
+    dataTraj = Vector{Vector{Float64}}(undef, length(data))
 
     # Instantiates a vector of vectors to store trajectory of datapoints.
     for i in eachindex(dataTraj)
@@ -70,11 +71,19 @@ function testing2(x0::AbstractVector, distribution::Distribution, iterations::In
     end
 
     # Graphs each of the histograms representing the values attained for the evolution of each starting value
-    #plt = histogram(vals, label=:"Samples", normalize=:pdf, color=:blue) # Plot the values sampled above
+    # Want to plot a histogram for each distribution and then animate it
     for i in eachindex(dataTraj)
-        plt = histogram(dataTraj[i], label=:"Samples", normalize=:pdf, bins=0:0.01:1) # Plot the values sampled above
-        display(plt)
+        histogram(dataTraj[i])
+        # for j in eachindex(dataTraj[i])
+        #     histogram(dataTraj[i][j])
+        # end
     end
+    display(current())
+    #plt = histogram(vals, label=:"Samples", normalize=:pdf, color=:blue) # Plot the values sampled above
+    # for i in eachindex(dataTraj)
+    #     plt = histogram(dataTraj[i], label=:"Samples", normalize=:pdf, bins=0:0.01:1) # Plot the values sampled above
+    #     display(plt)
+    # end
     #display(current())
 end
 
@@ -92,8 +101,8 @@ for dist in distList
     for i in eachindex(x0)
         x0[i] = mod(x0[i], 1)
     end
-    testing(x0, dist, iterations, func)
-    #testing2(x0, dist, iterations, func)
+    #testing(x0, dist, iterations, func)
+    testing2(x0, dist, iterations, func)
     
     vals = rand(dist, samplesNum)
     # for j in eachindex(vals)
