@@ -90,7 +90,7 @@ function tracking(traj::AbstractVector)
     # Record and display distribution evolution over time.
     @gif for i in eachindex(traj)
         histogram(traj[i], xlims=(0,1), ylims=(0,10000), bins=50, xlabel="Values", ylabel="Frequency") # Plot the values sampled above
-    end fps = 8
+    end fps = 8E
 end
 
 """
@@ -102,7 +102,7 @@ Generate n valid samples from a specified distribution on the interval [0,1].
 - `n::Int`: The number of samples to generate.
 - `distribution::Distribution`: The distribution from which to generate the samples.
 """
-function sampling(n::Int, distribution::Distribution)
+function sampling(n::Int, distribution::Distribution) # Make it capable to sample BigFloat
     samples = rand(distribution, n)  # Generate n samples from the specified distribution
     transformed_samples = (samples .- minimum(samples)) / (maximum(samples) - minimum(samples))  # Transform samples to the interval [0, 1]
     valid_samples = filter(x -> 0 ≤ x ≤ 1, transformed_samples)  # Filter out values outside [lower, upper]
