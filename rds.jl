@@ -26,30 +26,6 @@ struct RDS
 end
 
 """
-    fω(ω::Float64, X)
-
-Computes Xₖ₊₁ = fω(Xₖ).
-
-## Returns
-- Xₖ₊₁ = fω(Xₖ).
-
-Note that 'fω' is a function modulo 1 so that Im(fω) ∈ M .
-
-"""
-#function fω(ω::Float64, X, func::Function; type="quenched")
-#    newvec = Vector{}()
-#    if type == "quenched"
-#        newvec = [mod(func(ω, x), 1) for x in X]
-#    else
-#        omegas = rand(system.LawOfSamples, n)    # [ω₁, ω₂, ⋯, ωₙ] 
-#    end
-    #    for x in X
-    #    push!(newvec, mod(func(ω, x), 1))
-    #end
-#    return newvec
-#end
-
-"""
     struct PhaseSpaceDomainException <: Exception
 
 An exception type representing an error related to the phase space domain.
