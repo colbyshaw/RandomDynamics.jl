@@ -36,14 +36,18 @@ Computes Xₖ₊₁ = fω(Xₖ).
 Note that 'fω' is a function modulo 1 so that Im(fω) ∈ M .
 
 """
-function fω(ω::Float64, X, func::Function)
-    newvec = Vector{Float64}()
-    for x in X
-        push!(newvec, mod(func(ω, x), 1))
-    end
-    return newvec
-
-end
+#function fω(ω::Float64, X, func::Function; type="quenched")
+#    newvec = Vector{}()
+#    if type == "quenched"
+#        newvec = [mod(func(ω, x), 1) for x in X]
+#    else
+#        omegas = rand(system.LawOfSamples, n)    # [ω₁, ω₂, ⋯, ωₙ] 
+#    end
+    #    for x in X
+    #    push!(newvec, mod(func(ω, x), 1))
+    #end
+#    return newvec
+#end
 
 """
     struct PhaseSpaceDomainException <: Exception
@@ -64,7 +68,7 @@ end
 Returns sample trajectory of length n given an initial vector of data and random dynamical system.
 
 ## Fields
-- `System`: Random Dynamical System.
+- `system`: Random Dynamical System.
 - `n`: Length of trajectory.
 - `x0`: Initial data vector.
 - `func`: f_ω
@@ -75,26 +79,37 @@ Make sure 'func' is defined:
 
 This is to assure our function fω works properly.
 """
-function sampleTraj(System::RDS, n::Int64, x0, func::Function) 
+function sampleTraj(system::RDS, n::Int64, x0, func::Function; type="quenched") 
     if n <= 0
         throw(DomainError(n, "The number of iterations, $n, must be nonnegative."))
     end
 
     for x in x0
-        if !(x in System.M)
+        if !(x in system.M)
             return  throw(PhaseSpaceDomainException("Initial data vector, $x0, must be in phase space M, but $x ∉ M."))
         end
     end
 
     traj = Vector{}()
     push!(traj, x0)
-    omegas = rand(System.LawOfSamples, n)    # [ω₁, ω₂, ⋯, ωₙ] 
     curr = x0
 
-
-    for ω in omegas
-        curr = fω(ω, curr, func)  # e.g. curr = x1 = f\_ω₁(x0)
-        push!(traj, curr)   # add Xₖ to traj
+    if type == "quenched"
+        omegas = rand(system.LawOfSamples, n)    # [ω₁, ω₂, ⋯, ωₙ] 
+        for ω in omegas
+            curr = [mod(func(ω, x), 1) for x in curr]  # e.g. curr = x1 = f\_ω₁(x0)
+            push!(traj, curr)   # add Xₖ to traj
+        end
+    elseif type == "annealed"
+        for i in 1:n
+            newtraj = []
+            curr = traj[i]
+            omegas = rand(system.LawOfSamples, length(x0))
+            for (j, x) in enumerate(curr)
+                push!(newtraj, mod(func(omegas[j], x), 1))
+            end
+            push!(traj, newtraj)
+        end
     end
 
     return SVector{n+1}(traj)

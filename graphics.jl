@@ -10,6 +10,7 @@ Plots the trajectory of an initial vector for a given distribution.
 ## Arguments
 - `traj`: Trajectory we are testing.
 """
+
 function testing(traj::AbstractVector)
     dataTraj = Vector{Vector{Float64}}(undef, length(traj[1]))
 
@@ -88,8 +89,8 @@ The distribution evolution over time is recorded and displayed by generating a h
 function tracking(traj::AbstractVector)
     # Record and display distribution evolution over time.
     @gif for i in eachindex(traj)
-        histogram(traj[i], xlims=(0,1), xlabel="Values", ylabel="Frequency") # Plot the values sampled above
-    end fps = 1
+        histogram(traj[i], xlims=(0,1), ylims=(0,10000), bins=50, xlabel="Values", ylabel="Frequency") # Plot the values sampled above
+    end fps = 8
 end
 
 """
