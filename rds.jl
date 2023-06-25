@@ -25,7 +25,9 @@ struct RDS
     LawOfSamples::Distribution  # Distribution of Ω₀
 end
 
-struct ObservedRDS <: RDS
+# Many errors with subtyping, so maybe I could just not make RDS a parent type?
+struct ObservedRDS
+    rds::RDS                    # Parent Type RDS
     ϕω::Function                # Random Observable Function
 end
 
@@ -151,6 +153,8 @@ For the timeseries, we must now be given a trajectory where the random noise was
 function 'sampleTrajRO' (RO = Random Observables) is needed to do so.
 
 This can be completed as below.
+
+Is this enough? I may need to add another function for empiricalAverage, but it should work...
 """
 
 """
@@ -171,6 +175,8 @@ Make sure 'func' is defined:
     f(ω, x) and not f(x, ω). 
 
 This is to assure our function fω works properly.
+
+Essentially time series function.
 """
 function sampleTrajRO(system::ObservedRDS, n::Int64, x0, func::Function; type="quenched") 
     if n <= 0
@@ -190,7 +196,7 @@ function sampleTrajRO(system::ObservedRDS, n::Int64, x0, func::Function; type="q
     if type == "quenched"
         omegas = rand(system.LawOfSamples, n)    # [ω₁, ω₂, ⋯, ωₙ] 
         for ω in omegas
-            curr = [system.ϕω(mod(func(ω, x), 1)) for x in curr]  # e.g. curr = X₁ = ϕω(f\_ω₁(x0))
+            curr = [system.ϕω(mod(func(ω, x), 1)) for x in curr]  # e.g. curr = X₁ = ϕω(f\_ω₁(x0)) ||| Change!
             push!(traj, curr)   # add Xₖ to traj
         end
     elseif type == "annealed"
@@ -199,7 +205,7 @@ function sampleTrajRO(system::ObservedRDS, n::Int64, x0, func::Function; type="q
             curr = traj[i]
             omegas = rand(system.LawOfSamples, length(x0))
             for (j, x) in enumerate(curr)
-                push!(newtraj, system.ϕω(mod(func(omegas[j], x), 1)))   # Applies wrt ϕω
+                push!(newtraj, system.ϕω(mod(func(omegas[j], x), 1)))   # Applies wrt ϕω ||| Change!
             end
             push!(traj, newtraj)
         end
