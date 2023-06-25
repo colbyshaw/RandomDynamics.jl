@@ -137,4 +137,3 @@ function empiricalAverage(traj::AbstractVector)
     
     return SVector{length(tmp)}(tmp / length(traj))
 end
-
