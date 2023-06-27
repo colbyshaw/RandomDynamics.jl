@@ -2,7 +2,7 @@
 This file provides functionality related to random dynamical systems (RDS) and trajectory sampling.
 
 Usage:
-1. Include this file in your Julia script or interactive session using `include("TypeRDS.jl")`.
+1. Include this file in your Julia script or interactive session using `include("RDS.jl")`.
 2. Make sure you have the necessary packages installed.
 
 Functions:
@@ -12,17 +12,18 @@ Functions:
 - `empiricalAverage`: Compute the empirical average of a trajectory or time series.
 """
 
-using Distributions, Intervals, Plots, StaticArrays
+using Distributions, Intervals, Plots, StaticArrays, Statistics
 
-struct RDSDomain
+mutable struct Domain
     dim::Int
     modulo_coordinates::Vector{Int}
 end
 
-struct RDS
+mutable struct RDS
     M::Interval                 # Phase Space M.
-    SampleSpaceDimension::Int   # Dimesnion of Ω₀    
+    SampleSpaceDimension::Int   # Dimension of Ω₀
     LawOfSamples::Distribution  # Distribution of Ω₀
+    func::Function               # fω (generic function)
 end
 
 """
@@ -45,17 +46,16 @@ Returns sample trajectory of length n given an initial vector of data and random
 
 ## Fields
 - `system`: Random Dynamical System.
-- `n`: Length of trajectory.
 - `x0`: Initial data vector.
-- `func`: f_ω
+- `n`: Length of trajectory.
 
-Make sure 'func' is defined:
+Make sure our field `func` for our RDS is defined :
 
-    f(ω, x) and not f(x, ω). 
+    (ω, x) -> ⋯ and not (x , ω) -> ⋯
 
 This is to assure our function fω works properly.
 """
-function sampleTraj(system::RDS, n::Int64, x0, func::Function; type="quenched") 
+function sampleTraj(system::RDS, x0, n::Int64 ; type="quenched") 
     if n <= 0
         throw(DomainError(n, "The number of iterations, $n, must be nonnegative."))
     end
@@ -73,7 +73,7 @@ function sampleTraj(system::RDS, n::Int64, x0, func::Function; type="quenched")
     if type == "quenched"
         omegas = rand(system.LawOfSamples, n)    # [ω₁, ω₂, ⋯, ωₙ] 
         for ω in omegas
-            curr = [mod(func(ω, x), 1) for x in curr]  # e.g. curr = x1 = f\_ω₁(x0)
+            curr = [mod(system.func(ω, x), 1) for x in curr]  # e.g. curr = x1 = f\_ω₁(x0)
             push!(traj, curr)   # add Xₖ to traj
         end
     elseif type == "annealed"
@@ -82,7 +82,7 @@ function sampleTraj(system::RDS, n::Int64, x0, func::Function; type="quenched")
             curr = traj[i]
             omegas = rand(system.LawOfSamples, length(x0))
             for (j, x) in enumerate(curr)
-                push!(newtraj, mod(func(omegas[j], x), 1))
+                push!(newtraj, mod(system.func(omegas[j], x), 1))
             end
             push!(traj, newtraj)
         end
@@ -92,7 +92,7 @@ function sampleTraj(system::RDS, n::Int64, x0, func::Function; type="quenched")
 end
 
 """
-    timeseries(rds::RDS, fω::Function, ϕ::Function, x0, n::Int)
+    timeseries(traj::AbstractVector, ϕ::Function)
 
 Compute a time series of data points using the given random dynamical system (`rds`), functions `fω`, `ϕ`, an initial state `x0`, and a number of iterations `n`.
 
@@ -105,6 +105,7 @@ Compute a time series of data points using the given random dynamical system (`r
 - `timeseries`: A time series of transformed data points.
 
 """
+
 function timeseries(traj::AbstractVector, ϕ::Function)
     timeseries = Vector{}()
     for pos in traj
@@ -136,4 +137,28 @@ function empiricalAverage(traj::AbstractVector)
     end
     
     return SVector{length(tmp)}(tmp / length(traj))
+end
+
+"""
+    sampling(n::Int, distribution::Distribution)
+
+Generate n valid samples from a specified distribution on the interval [0,1].
+
+## Arguments
+- `n::Int`: The number of samples to generate.
+- `distribution::Distribution`: The distribution from which to generate the samples.
+= `precision="false"`: Key parameter determining precision of sample.
+"""
+function sampling(n::Int, distribution::Distribution; precision="false") # Slow when distribution=Normal()
+    # If precision is want, we use BigFloat.
+    if precision=="true"
+         # To randomly sample BigFloats from distribution, we use the inverse CDF function.
+        uni=rand(BigFloat, n)           
+        samples=quantile(distribution, uni)
+    else
+        samples = rand(distribution, n)
+    end
+    transformed_samples = (samples .- minimum(samples)) / (maximum(samples) - minimum(samples))  # Transform samples to the interval [0, 1]
+    valid_samples = filter(x -> 0 ≤ x ≤ 1, transformed_samples)  # Filter out values outside [lower, upper]
+    return valid_samples
 end
