@@ -6,7 +6,7 @@ include("rds.jl")
 Plots the trajectory of an initial vector for a given distribution.
 
 ## Arguments
-- `traj`: Trajectory we are testing.
+- `traj::AbstractVector`: Trajectory we are testing.
 """
 
 function testing(traj::AbstractVector)
@@ -38,7 +38,7 @@ end
 Tracks the evolution of the distributions of our states over time using a specified function, func (or fω).
 
 ## Argument
-- `trajectory`: Trajectory we are displaying.
+- `trajectory::AbstractVector`: Trajectory we are displaying.
 
 ## Details
 It is best for x0 to be sampled from a distribution.
