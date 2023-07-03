@@ -23,13 +23,10 @@ struct RDS
     M::Interval                 # Phase Space M.
     SampleSpaceDimension::Int   # Dimension of Ω₀    
     LawOfSamples::Distribution  # Distribution of Ω₀
+    func::Function              # fω (generic function)
 end
 
-# Many errors with subtyping, so maybe I could just not make RDS a parent type?
-struct ObservedRDS
-    rds::RDS                    # Parent Type RDS
-    ϕω::Function                # Random Observable Function
-end
+# Not using 'ObservedRDS' type anymore because of updated sampleTraj implementation
 
 """
     struct PhaseSpaceDomainException <: Exception
@@ -62,7 +59,7 @@ Make sure 'func' is defined:
 
 This is to assure our function fω works properly.
 """
-function sampleTraj(system::RDS, n::Int64, x0, func::Function; type="quenched") 
+function sampleTraj(system::RDS, n::Int64, x0; type="quenched", RO=false)
     if n <= 0
         throw(DomainError(n, "The number of iterations, $n, must be nonnegative."))
     end
@@ -78,10 +75,13 @@ function sampleTraj(system::RDS, n::Int64, x0, func::Function; type="quenched")
     curr = x0
 
     if type == "quenched"
-        omegas = rand(system.LawOfSamples, n)    # [ω₁, ω₂, ⋯, ωₙ] 
+        omegas = rand(system.LawOfSamples, n)    # [ω₁, ω₂, ⋯, ωₙ]
         for ω in omegas
-            curr = [mod(func(ω, x), 1) for x in curr]  # e.g. curr = x1 = f\_ω₁(x0)
+            curr = [mod(system.func(ω, x), 1) for x in curr]  # e.g. curr = x1 = f\_ω₁(x0)
             push!(traj, curr)   # add Xₖ to traj
+        end
+        if RO == true
+            return [SVector{n+1}(traj), SVector{n}(omegas)]
         end
     elseif type == "annealed"
         for i in 1:n
@@ -99,7 +99,7 @@ function sampleTraj(system::RDS, n::Int64, x0, func::Function; type="quenched")
 end
 
 """
-    timeseries(rds::RDS, fω::Function, ϕ::Function, x0, n::Int)
+timeseries(traj::AbstractVector, ϕ::Function)
 
 Compute a time series of data points using the given random dynamical system (`rds`), functions `fω`, `ϕ`, an initial state `x0`, and a number of iterations `n`.
 
@@ -114,11 +114,51 @@ Compute a time series of data points using the given random dynamical system (`r
 """
 function timeseries(traj::AbstractVector, ϕ::Function)
     timeseries = Vector{}()
-    for pos in traj
+    count = 0               # Ensures the first initial state x0 does not have ϕ applied to it
+    for pos in traj         # Change to enumerate as in function below
+        if count == 0
+            push!(timeseries, pos)
+            continue
+        end
         tmp = Vector{}()  # tmp = Vector{Float64}()
         for data in pos
             push!(tmp, ϕ(data))
         end
+        # push!(timeseries, ϕ.(pos))   # See if ϕ can be applied to every step
+        push!(timeseries, tmp)
+        count += 1
+    end
+           
+    return SVector{length(traj)}(timeseries)
+end
+
+"""
+timeseries(traj::AbstractVector, omegas::AbstractVector, ϕω::Function)
+
+Compute a time series of data points using the given trajectory 'traj', omega values used ('omegas'), and the random observable function ϕω.
+
+## Arguments
+- `traj`: Trajectory.
+- 'omegas': Omega values used during the creation of the trajectory.
+- `ϕω`: A function to apply to each data point using the ω values provided.
+
+
+## Returns
+- `timeseries`: A time series of transformed data points.
+
+"""
+function timeseries(traj::AbstractVector, omegas::AbstractVector, ϕω::Function)
+    timeseries = Vector{}()
+    for (i, pos) in enumerate(traj)
+        if i == 1           # Ensures the first initial state x0 does not have ϕ applied to it
+            push!(timeseries, pos)
+            continue
+        end
+        tmp = Vector{}()  # tmp = Vector{Float64}()
+        for data in pos
+            push!(tmp, ϕω(omegas[i], data))
+        end
+        # push!(timeseries, ϕω.(pos))   # See if ϕ can be applied to every step
         push!(timeseries, tmp)
     end
            
@@ -145,71 +185,33 @@ function empiricalAverage(traj::AbstractVector)
     return SVector{length(tmp)}(tmp / length(traj))
 end
 
-
 """
-We now work to implement the timeseries and empiricalAverage functions above now with random observables ϕω.
+    sampling(n::Int, distribution::Distribution)
 
-For the timeseries, we must now be given a trajectory where the random noise was used along the trajectory. Thus, a new
-function 'sampleTrajRO' (RO = Random Observables) is needed to do so.
+Generate n valid samples from a specified distribution on the interval [0,1].
 
-This can be completed as below.
-
-Is this enough? I may need to add another function for empiricalAverage, but it should work...
+## Arguments
+- `n::Int`: The number of samples to generate.
+- `distribution::Distribution`: The distribution from which to generate the samples.
 """
-
-"""
-    sampleTrajRO(system::ObservedRDS, n::Int64, x0, func::Function; type="quenched")
-
-Returns sample trajectory with respect to the random observables of length n given an initial vector of data and 
-observed random dynamical system.
-
-## Fields
-- `system`: Observed Random Dynamical System.
-- `n`: Length of trajectory.
-- `x0`: Initial data vector.
-- `func`: f_ω
-- 'type': Determines if dynamics will evolve according to either a quenched or annealed framework.
-
-Make sure 'func' is defined:
-
-    f(ω, x) and not f(x, ω). 
-
-This is to assure our function fω works properly.
-
-Essentially time series function.
-"""
-function sampleTrajRO(system::ObservedRDS, n::Int64, x0, func::Function; type="quenched") 
-    if n <= 0
-        throw(DomainError(n, "The number of iterations, $n, must be nonnegative."))
-    end
-
-    for x in x0
-        if !(x in system.M)
-            return  throw(PhaseSpaceDomainException("Initial data vector, $x0, must be in phase space M, but $x ∉ M."))
-        end
-    end
-
-    traj = Vector{}()
-    push!(traj, x0)
-    curr = x0
-
-    if type == "quenched"
-        omegas = rand(system.LawOfSamples, n)    # [ω₁, ω₂, ⋯, ωₙ] 
-        for ω in omegas
-            curr = [system.ϕω(mod(func(ω, x), 1)) for x in curr]  # e.g. curr = X₁ = ϕω(f\_ω₁(x0)) ||| Change!
-            push!(traj, curr)   # add Xₖ to traj
-        end
-    elseif type == "annealed"
-        for i in 1:n
-            newtraj = []
-            curr = traj[i]
-            omegas = rand(system.LawOfSamples, length(x0))
-            for (j, x) in enumerate(curr)
-                push!(newtraj, system.ϕω(mod(func(omegas[j], x), 1)))   # Applies wrt ϕω ||| Change!
-            end
-            push!(traj, newtraj)
-        end
-    end
-
-    return SVector{n+1}(traj)
+function sampling(n::Int, distribution::Distribution) # Make it capable to sample BigFloat
+    samples = rand(distribution, n)  # Generate n samples from the specified distribution
+    transformed_samples = (samples .- minimum(samples)) / (maximum(samples) - minimum(samples))  # Transform samples to the interval [0, 1]
+    valid_samples = filter(x -> 0 ≤ x ≤ 1, transformed_samples)  # Filter out values outside [lower, upper]
+    return valid_samples
 end
+
+# Testing for function
+
+
+# function func(a, b)
+#     return a * b
+# end
+
+# M = Interval{Closed, Closed}(0, 1)
+
+# law = Normal()
+
+# rds = RDS(M, 1, law, func)
+
+# rds.func(-3, 12)
