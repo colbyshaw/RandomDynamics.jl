@@ -106,7 +106,6 @@ Compute a time series of data points using the given random dynamical system (`r
 - `timeseries`: A time series of transformed data points.
 
 """
-
 function timeseries(traj::AbstractVector, ϕ::Function)
     return SVector{length(traj)}([ϕ.(pos) for pos in traj])
 end
@@ -121,8 +120,6 @@ Computes a Random Observable dependent on our vector of omegas, ϕ, and traj.
 - `omegas::AbstractVector`: A vector of ω values.
 - `ϕ::Function`: Function used to create our timeseries.
 
-# Returns
-A Vector of values representing the timeseries computed using `ϕ` for each angular frequency and trajectory position.
 """
 function timeseries(traj::AbstractVector, omegas::AbstractVector, ϕ::Function)
     timeseries = Vector{}()
@@ -163,9 +160,9 @@ Generate n valid samples from a specified distribution on the interval [0,1].
 - `distribution::Distribution`: The distribution from which to generate the samples.
 = `precision`: Key parameter determining precision of sample.
 """
-function sampling(n::Int, distribution::Distribution; precision="false") # Slow when distribution=Normal()
+function sampling(n::Int, distribution::Distribution; precision=false) # Slow when distribution=Normal()
     # If precision is want, we use BigFloat.
-    if precision=="true"
+    if precision==true
          # To randomly sample BigFloats from distribution, we use the inverse CDF function.
         uni=rand(BigFloat, n)           
         samples=quantile(distribution, uni)

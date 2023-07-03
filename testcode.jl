@@ -23,7 +23,9 @@ univariate_distributions = [
 
     # No Beta, Gamma, InverseGamma, Chi, Chisq, FDist, TDist. Buffer error on LogNormal, Normal, Levy
 
-    for dist in univariate_distributions
-    sampling(1000000, dist, precision="true")
+for dist in univariate_distributions
+    sampling(100000, dist, precision=true)
     println("Sampling process for $dist is complete!")
 end
+
+# LogNormal, Normal, and Levy all use the Err function. There may be an integral error in the code for Err function. 
