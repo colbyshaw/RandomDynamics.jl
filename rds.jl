@@ -19,6 +19,15 @@ struct RDSDomain
     modulo_coordinates::Vector{Int}
 end
 
+"""
+
+Make sure 'func' is defined:
+
+    f(ω, x) and not f(x, ω). 
+
+This is to assure our function fω works properly.
+
+"""
 struct RDS
     M::Interval                 # Phase Space M.
     SampleSpaceDimension::Int   # Dimension of Ω₀    
@@ -42,7 +51,7 @@ struct PhaseSpaceDomainException <: Exception
 end
 
 """
-    sampleTraj(system::RDS, n::Int64, x0, func::Function; type="quenched")
+    sampleTraj(system::RDS, n::Int64, x0; type="quenched", RO=false)
 
 Returns sample trajectory of length n given an initial vector of data and random dynamical system.
 
@@ -50,14 +59,9 @@ Returns sample trajectory of length n given an initial vector of data and random
 - `system`: Random Dynamical System.
 - `n`: Length of trajectory.
 - `x0`: Initial data vector.
-- `func`: f_ω
 - 'type': Determines if dynamics will evolve according to either a quenched or annealed framework.
+- 'RO': Determines if the list of ω values is returned to be used for Random Observables (RO)
 
-Make sure 'func' is defined:
-
-    f(ω, x) and not f(x, ω). 
-
-This is to assure our function fω works properly.
 """
 function sampleTraj(system::RDS, n::Int64, x0; type="quenched", RO=false)
     if n <= 0
@@ -101,7 +105,7 @@ end
 """
 timeseries(traj::AbstractVector, ϕ::Function)
 
-Compute a time series of data points using the given random dynamical system (`rds`), functions `fω`, `ϕ`, an initial state `x0`, and a number of iterations `n`.
+Compute a time series of data points using the given trajectory 'traj' and function 'ϕ' to evolve with.
 
 ## Arguments
 - `traj`: Trajectory.
@@ -133,9 +137,9 @@ function timeseries(traj::AbstractVector, ϕ::Function)
 end
 
 """
-timeseries(traj::AbstractVector, omegas::AbstractVector, ϕω::Function)
+    timeseries(traj::AbstractVector, omegas::AbstractVector, ϕω::Function)
 
-Compute a time series of data points using the given trajectory 'traj', omega values used ('omegas'), and the random observable function ϕω.
+Compute a time series of data points using the given trajectory 'traj', omega values 'omegas' used, and the random observable function 'ϕω'.
 
 ## Arguments
 - `traj`: Trajectory.
@@ -168,10 +172,11 @@ end
 """
     empiricalAverage(traj::AbstractVector)
 
-Compute the empirical average of a given trajectory.
+Compute the empirical average of a given trajectory 'traj'.
 
 ## Arguments
 - `traj::AbstractVector`: A trajectory represented as a vector.
+
 """
 function empiricalAverage(traj::AbstractVector)
     tmp = zeros(length(traj[1]))
@@ -193,6 +198,7 @@ Generate n valid samples from a specified distribution on the interval [0,1].
 ## Arguments
 - `n::Int`: The number of samples to generate.
 - `distribution::Distribution`: The distribution from which to generate the samples.
+
 """
 function sampling(n::Int, distribution::Distribution) # Make it capable to sample BigFloat
     samples = rand(distribution, n)  # Generate n samples from the specified distribution

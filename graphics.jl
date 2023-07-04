@@ -3,9 +3,9 @@ include("rds.jl")
 using Statistics
 
 """
-    testing(x0::AbstractVector, distribution::Distribution, iterations::Int64)
+    testing(traj::AbstractVector)
 
-Plots the trajectory of an initial vector for a given distribution.
+Plots the trajectory 'traj' given.
 
 ## Arguments
 - `traj`: Trajectory we are testing.
