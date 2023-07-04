@@ -70,7 +70,7 @@ function sampleTraj(system::RDS, n::Int64, x0; type="quenched", RO=false)
 
     for x in x0
         if !(x in system.M)
-            return  throw(PhaseSpaceDomainException("Initial data vector, $x0, must be in phase space M, but $x ∉ M."))
+            return throw(PhaseSpaceDomainException("Initial data vector, $x0, must be in phase space M, but $x ∉ M."))
         end
     end
 
@@ -103,7 +103,7 @@ function sampleTraj(system::RDS, n::Int64, x0; type="quenched", RO=false)
 end
 
 """
-timeseries(traj::AbstractVector, ϕ::Function)
+    timeseries(traj::AbstractVector, ϕ::Function)
 
 Compute a time series of data points using the given trajectory 'traj' and function 'ϕ' to evolve with.
 
@@ -198,10 +198,17 @@ Generate n valid samples from a specified distribution on the interval [0,1].
 ## Arguments
 - `n::Int`: The number of samples to generate.
 - `distribution::Distribution`: The distribution from which to generate the samples.
-
+= `precision`: Key parameter determining precision of sample.
 """
-function sampling(n::Int, distribution::Distribution) # Make it capable to sample BigFloat
-    samples = rand(distribution, n)  # Generate n samples from the specified distribution
+function sampling(n::Int, distribution::Distribution; precision=false) # Slow when distribution=Normal()
+    # If precision is want, we use BigFloat.
+    if precision==true
+         # To randomly sample BigFloats from distribution, we use the inverse CDF function.
+        uni=rand(BigFloat, n)
+        samples=quantile(distribution, uni)
+    else
+        samples = rand(distribution, n)
+    end
     transformed_samples = (samples .- minimum(samples)) / (maximum(samples) - minimum(samples))  # Transform samples to the interval [0, 1]
     valid_samples = filter(x -> 0 ≤ x ≤ 1, transformed_samples)  # Filter out values outside [lower, upper]
     return valid_samples
