@@ -14,9 +14,20 @@ Functions:
 
 using Distributions, Intervals, Plots, StaticArrays
 
+"""
+
+Use a Vector of tuples of the following form:
+
+(domain::String, dimension::Int64, mod1Choice::Bool)
+
+- 'domain': String that defines the domain to be used, such as "R" for the real numbers, "C" for the complex numbers, and "T" for the torus
+- 'dimension': The dimension of the domain itself, so use 3 if you want ℝ³
+- 'mod1Choice': Boolean decision to have the coordinate(s) be in modulo 1 or not
+
+"""
+
 struct RDSDomain
-    dim::Int
-    modulo_coordinates::Vector{Int}
+    domainVec::Vector
 end
 
 """
@@ -63,7 +74,7 @@ Returns sample trajectory of length n given an initial vector of data and random
 - 'RO': Determines if the list of ω values is returned to be used for Random Observables (RO)
 
 """
-function sampleTraj(system::RDS, n::Int64, x0; type="quenched", RO=false)
+function sampleTraj(system::RDS, n::Int64, x0, type="quenched", RO=false)
     if n <= 0
         throw(DomainError(n, "The number of iterations, $n, must be nonnegative."))
     end
@@ -93,7 +104,7 @@ function sampleTraj(system::RDS, n::Int64, x0; type="quenched", RO=false)
             curr = traj[i]
             omegas = rand(system.LawOfSamples, length(x0))
             for (j, x) in enumerate(curr)
-                push!(newtraj, mod(func(omegas[j], x), 1))
+                push!(newtraj, mod(system.func(omegas[j], x), 1))
             end
             push!(traj, newtraj)
         end
@@ -110,7 +121,6 @@ Compute a time series of data points using the given trajectory 'traj' and funct
 ## Arguments
 - `traj`: Trajectory.
 - `ϕ`: A function to apply to each data point.
-
 
 ## Returns
 - `timeseries`: A time series of transformed data points.
@@ -145,7 +155,6 @@ Compute a time series of data points using the given trajectory 'traj', omega va
 - `traj`: Trajectory.
 - 'omegas': Omega values used during the creation of the trajectory.
 - `ϕω`: A function to apply to each data point using the ω values provided.
-
 
 ## Returns
 - `timeseries`: A time series of transformed data points.
@@ -214,17 +223,21 @@ function sampling(n::Int, distribution::Distribution; precision=false) # Slow wh
     return valid_samples
 end
 
-# Testing for function
+"""
+    makeDistribution(M::RDSDomain, f)
 
+Constructs the distribution 'f' on the given RDS Domain 'M'.
 
-# function func(a, b)
-#     return a * b
-# end
+## Arguments
+- `M`: RDSDomain to which the distribution should be constructed onto.
+- 'f': The original distribution.
 
-# M = Interval{Closed, Closed}(0, 1)
+## Returns
+- New distribution supported on M obtained systematically from f.
 
-# law = Normal()
-
-# rds = RDS(M, 1, law, func)
-
-# rds.func(-3, 12)
+Incomplete
+"""
+function makeDistribution(M::RDSDomain, f)
+    # How could we return a new function? Can we incorporate another function definition within a function?
+    # Doesn't look like it. Maybe create another method for which this can be read as?
+end
