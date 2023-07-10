@@ -29,3 +29,9 @@ for dist in univariate_distributions
 end
 
 # LogNormal, Normal, and Levy all use the Err function. There may be an integral error in the code for Err function. 
+
+x = BigFloat(0, pre)
+s = BigFloat(1, pre)
+
+y = Normal(x , s)
+rand(y, 100)

@@ -14,16 +14,32 @@ Functions:
 
 using Distributions, Intervals, Plots, StaticArrays, Statistics
 
-mutable struct Domain
+mutable struct RDSDomain
     dim::Int
-    modulo_coordinates::Vector{Int}
+    modulo_coordinates::Vector{Bool}
 end
 
 mutable struct RDS
+    domain::RDSDomain
     M::Interval                 # Phase Space M.
     SampleSpaceDimension::Int   # Dimension of Ω₀
     LawOfSamples::Distribution  # Distribution of Ω₀
     func::Function               # fω (generic function)
+
+end
+
+function makeDistribution(M::RDSDomain, f, truncation::Int64)
+    g = x -> 0
+
+    for iteration in 1:truncation
+        n = Vector{Int64}(undef, M.dim)
+        for i in 1:M.dim
+            n[i] = M.modulo_coordinates[i] ? rand(-1000:1000) : 0
+        end
+        g = x -> f(x .+ n)
+    end
+    #g(x) = sum(x .+ n) for n in Iterators.product((M.modulo_coordinates[i] ? [0, 1] : [0]) for i in 1:M.dim))
+    return g
 end
 
 """
@@ -55,7 +71,7 @@ Make sure our field `func` for our RDS is defined :
 
 This is to assure our function fω works properly.
 """
-function sampleTraj(system::RDS, x0, n::Int64; type="quenched", RO=false) 
+function sampleTraj(system::RDS, x0, n::Int64, type="quenched", RO=false) 
     if n <= 0
         throw(DomainError(n, "The number of iterations, $n, must be nonnegative."))
     end
@@ -173,3 +189,24 @@ function sampling(n::Int, distribution::Distribution; precision=false) # Slow wh
     valid_samples = filter(x -> 0 ≤ x ≤ 1, transformed_samples)  # Filter out values outside [lower, upper]
     return valid_samples
 end
+
+# Create a vector
+v = [1, 2, 3, 4, 5]
+
+# Indices to add values
+indices = [2, 4]
+values = [10, 20]
+
+# Add values to multiple indices
+v[indices] += values
+
+# Print the updated vector
+println(v)
+
+rand(-5:5, 1, 2)
+
+x=  Vector{Int64}(undef,3)
+
+dom = RDSDomain(2, [true, true])
+
+makeDistribution(dom, Product(fill(Uniform(0, 1), 2)), 10)
