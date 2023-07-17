@@ -28,19 +28,52 @@ mutable struct RDS
 
 end
 
-function makeDistribution(M::RDSDomain, f, truncation::Int64)
-    g = x -> 0
-
-    for iteration in 1:truncation
-        n = Vector{Int64}(undef, M.dim)
-        for i in 1:M.dim
-            n[i] = M.modulo_coordinates[i] ? rand(-1000:1000) : 0
-        end
-        g = x -> f(x .+ n)
-    end
+#function makeDistribution(M::RDSDomain, f, truncation::Int64)
+#    g = x -> 0
+#
+#    for iteration in -truncation:truncation
+#        n = Vector{Int64}(undef, M.dim)
+#        for i in 1:M.dim
+#            n[i] = M.modulo_coordinates[i] ? rand(-1000:1000) : 0
+#        end
+#        g = x -> f(x .+ n)
+#    end
     #g(x) = sum(x .+ n) for n in Iterators.product((M.modulo_coordinates[i] ? [0, 1] : [0]) for i in 1:M.dim))
-    return g
+#    return g
+#end
+
+function makeDistribution(M::RDSDomain, f::Distribution, truncation::Int64)
+    if M.dim != length(f)
+        throw(ArgumentError("Dimension for domains of M and f must match!"))
+    end
+
+    function g(x::Vector)
+        range = -truncation:truncation
+        total = 0
+        for elt in Iterators.product(fill(range , M.dim)...)
+            # Take into account the modulo of our domain M.
+            vec = collect(elt)
+            zeros = [i for i in 1:length(M.modulo_coordinates) if M.modulo_coordinates[i] == false]
+            vec[zeros] .= 0
+            total += pdf(f, x .+ vec)
+        end
+        return total
+    end
+    return g 
 end
+
+dom = RDSDomain(2, [true, false])
+f = MultivariateNormal([0, 0], [1 0.0; 0.0 1])
+
+# Generate grid points for plotting
+x = 0:.1:1
+y = -10:.1:10
+grid = Iterators.product(x, y)
+
+g = makeDistribution(dom, f, 3)
+z = [g([x,y]) for (x,y) in grid]
+z_matrix = reshape(z, length(y), length(x))
+surface(x, y, z_matrix, xlabel = "X", ylabel = "Y", zlabel = "Z", title = "3D Plot of g")
 
 """
     struct PhaseSpaceDomainException <: Exception
@@ -190,23 +223,3 @@ function sampling(n::Int, distribution::Distribution; precision=false) # Slow wh
     return valid_samples
 end
 
-# Create a vector
-v = [1, 2, 3, 4, 5]
-
-# Indices to add values
-indices = [2, 4]
-values = [10, 20]
-
-# Add values to multiple indices
-v[indices] += values
-
-# Print the updated vector
-println(v)
-
-rand(-5:5, 1, 2)
-
-x=  Vector{Int64}(undef,3)
-
-dom = RDSDomain(2, [true, true])
-
-makeDistribution(dom, Product(fill(Uniform(0, 1), 2)), 10)
