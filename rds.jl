@@ -14,20 +14,20 @@ Functions:
 
 using Distributions, Intervals, Plots, StaticArrays
 
-"""
+# Make SysImage Document
 
+"""
 Use a Vector of tuples of the following form:
 
-(domain::String, dimension::Int64, mod1Choice::Bool)
+(domain::String, mod1Choice::Bool)
 
-- 'domain': String that defines the domain to be used, such as "R" for the real numbers, "C" for the complex numbers, and "T" for the torus
-- 'dimension': The dimension of the domain itself, so use 3 if you want ℝ³
-- 'mod1Choice': Boolean decision to have the coordinate(s) be in modulo 1 or not
+- 'dim': Integer that defines the dimension
+- 'modulo_coordinates': Vector of Boolean decisions to have the coordinates be in modulo 1 or not
 
 """
-
 struct RDSDomain
-    domainVec::Vector
+    dim::Int
+    modulo_coordinates::Vector{Bool}
 end
 
 """
@@ -169,7 +169,7 @@ function timeseries(traj::AbstractVector, omegas::AbstractVector, ϕω::Function
         end
         tmp = Vector{}()  # tmp = Vector{Float64}()
         for data in pos
-            push!(tmp, ϕω(omegas[i], data))
+            push!(tmp, ϕω(omegas[i - 1], data))
         end
         # push!(timeseries, ϕω.(pos))   # See if ϕ can be applied to every step
         push!(timeseries, tmp)
@@ -207,14 +207,22 @@ Generate n valid samples from a specified distribution on the interval [0,1].
 ## Arguments
 - `n::Int`: The number of samples to generate.
 - `distribution::Distribution`: The distribution from which to generate the samples.
-= `precision`: Key parameter determining precision of sample.
+- `precision`: Key parameter determining precision of sample.
+- 'BFNorm': Used if want BigFloat samples from the Standard Normal Distribution.
+
 """
-function sampling(n::Int, distribution::Distribution; precision=false) # Slow when distribution=Normal()
-    # If precision is want, we use BigFloat.
+# Make able to sample BigFloats from Normal Distribution
+function sampling(n::Int, distribution::Distribution, precision=false, BFNorm=false) # Slow when distribution=Normal()
+    # If precision is true, we want to use BigFloat.
     if precision==true
-         # To randomly sample BigFloats from distribution, we use the inverse CDF function.
+        # To randomly sample BigFloats from distribution, we use the inverse CDF function.
+        # Does not always work, depending on the given univariate distribution
         uni=rand(BigFloat, n)
         samples=quantile(distribution, uni)
+    elseif BFNorm==true
+        precision = 2^9  # Adjust as needed
+        dist = Normal(BigFloat(0, precision), BigFloat(1, precision))
+        samples = rand(dist, n)
     else
         samples = rand(distribution, n)
     end
@@ -237,7 +245,29 @@ Constructs the distribution 'f' on the given RDS Domain 'M'.
 
 Incomplete
 """
-function makeDistribution(M::RDSDomain, f)
+function makeDistribution(M::RDSDomain, f, boxSize::Int64)
     # How could we return a new function? Can we incorporate another function definition within a function?
     # Doesn't look like it. Maybe create another method for which this can be read as?
 end
+
+
+# function makeDistributionTorus                    Torus
+# function makeDistributionCrossProduct             Coordinate-Wise
+
+
+# Want to sum over a large box, whose size is specified by the user. (For makeDistributionTorus)
+# Also want a cross-product parameter (For makeDistributionCrossProduct)
+
+
+####################################################################################
+
+"""
+
+Additional Implementations
+
+- Expectation of Random Observable
+- Other statistics to RO
+
+"""
+
+####################################################################################

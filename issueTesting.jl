@@ -21,6 +21,10 @@ dist5 = Normal(BigFloat(0, precision), BigFloat(1, precision))
 # samples = rand(dist4, 1000000)
 samples = rand(dist5, 1000000)
 
+x = rand(samples)
+
+println(x, "\n", typeof(x))
+
 # Check the type of the samples
 for val in samples
     if typeof(val) != BigFloat
