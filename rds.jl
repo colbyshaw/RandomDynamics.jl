@@ -16,31 +16,15 @@ using Distributions, Intervals, Plots, StaticArrays, Statistics
 
 mutable struct RDSDomain
     dim::Int
-    modulo_coordinates::Vector{Bool}
+    modulo_coordinates::Vector{Bool} 
 end
 
 mutable struct RDS
-    domain::RDSDomain
     M::Interval                 # Phase Space M.
     SampleSpaceDimension::Int   # Dimension of Ω₀
     LawOfSamples::Distribution  # Distribution of Ω₀
     func::Function               # fω (generic function)
-
 end
-
-#function makeDistribution(M::RDSDomain, f, truncation::Int64)
-#    g = x -> 0
-#
-#    for iteration in -truncation:truncation
-#        n = Vector{Int64}(undef, M.dim)
-#        for i in 1:M.dim
-#            n[i] = M.modulo_coordinates[i] ? rand(-1000:1000) : 0
-#        end
-#        g = x -> f(x .+ n)
-#    end
-    #g(x) = sum(x .+ n) for n in Iterators.product((M.modulo_coordinates[i] ? [0, 1] : [0]) for i in 1:M.dim))
-#    return g
-#end
 
 function makeDistribution(M::RDSDomain, f::Distribution, truncation::Int64)
     if M.dim != length(f)
@@ -49,31 +33,27 @@ function makeDistribution(M::RDSDomain, f::Distribution, truncation::Int64)
 
     function g(x::Vector)
         range = -truncation:truncation
-        total = 0
-        for elt in Iterators.product(fill(range , M.dim)...)
+        total = pdf(f, x)
+        zero = [i for i in 1:length(M.modulo_coordinates) if M.modulo_coordinates[i] == false]
+        modulos = [i for i in 1:length(M.modulo_coordinates) if M.modulo_coordinates[i] == true]
+        translator = Vector{}(undef, M.dim)
+
+        for elt in Iterators.product(fill(range, length(modulos))...)
             # Take into account the modulo of our domain M.
-            vec = collect(elt)
-            zeros = [i for i in 1:length(M.modulo_coordinates) if M.modulo_coordinates[i] == false]
-            vec[zeros] .= 0
-            total += pdf(f, x .+ vec)
+            vals = collect(elt)
+            #println("translator vector non zero values: $vals and zeros: $zero")
+            translator[zero] .= 0
+            translator[modulos] = vals
+            #println("translator vector: $translator, and total: $total")
+            if translator != zeros(M.dim)
+                total += pdf(f, x .+ translator)
+            end
+            #println("new total: $total.")
         end
         return total
     end
     return g 
 end
-
-dom = RDSDomain(2, [true, false])
-f = MultivariateNormal([0, 0], [1 0.0; 0.0 1])
-
-# Generate grid points for plotting
-x = 0:.1:1
-y = -10:.1:10
-grid = Iterators.product(x, y)
-
-g = makeDistribution(dom, f, 3)
-z = [g([x,y]) for (x,y) in grid]
-z_matrix = reshape(z, length(y), length(x))
-surface(x, y, z_matrix, xlabel = "X", ylabel = "Y", zlabel = "Z", title = "3D Plot of g")
 
 """
     struct PhaseSpaceDomainException <: Exception
@@ -212,7 +192,7 @@ Generate n valid samples from a specified distribution on the interval [0,1].
 function sampling(n::Int, distribution::Distribution; precision=false) # Slow when distribution=Normal()
     # If precision is want, we use BigFloat.
     if precision==true
-         # To randomly sample BigFloats from distribution, we use the inverse CDF function.
+        # To randomly sample BigFloats from distribution, we use the inverse CDF function.
         uni=rand(BigFloat, n)           
         samples=quantile(distribution, uni)
     else
