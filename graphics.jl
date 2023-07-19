@@ -52,3 +52,18 @@ function tracking(traj::AbstractVector)
     end fps = 8
 end
    
+function distDisplay(M::RDSDomain, f::Distribution, xrange::AbstractRange, yrange::AbstractRange, truncation::Int64)
+    @gif for i in 1:truncation
+        g = makeDistribution(M, f, i)
+        zs = [g([xs,ys]) for ys in yrange, xs in xrange]
+        surface(x, y, zs, xlabel="X", ylabel="Y", zlabel="Z", title="Density on M.")
+    end fps = 2
+end
+
+dom = RDSDomain(2, [true, false])
+f = MultivariateNormal([0, 0], [1 0.0; 0.0 1])
+# Generate grid points for plotting
+x = 0:.1:1
+y = -4:.1:4
+
+distDisplay(dom , f, x, y, 5)
