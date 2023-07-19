@@ -232,22 +232,27 @@ function sampling(n::Int, distribution::Distribution, precision=false, BFNorm=fa
 end
 
 """
-    makeDistribution(M::RDSDomain, f)
+    makeDistributionCross(functionList)
 
-Constructs the distribution 'f' on the given RDS Domain 'M'.
+Constructs the distribution supported on cross product of domains from the given function list.
 
 ## Arguments
-- `M`: RDSDomain to which the distribution should be constructed onto.
-- 'f': The original distribution.
+- `functionList`: List of functions that each act on a given domain.
 
 ## Returns
-- New distribution supported on M obtained systematically from f.
-
-Incomplete
+- New described function acting as a distribution.
 """
-function makeDistribution(M::RDSDomain, f, boxSize::Int64)
-    # How could we return a new function? Can we incorporate another function definition within a function?
-    # Doesn't look like it. Maybe create another method for which this can be read as?
+function makeDistributionCross(functionList)
+    # Return a function that applies corresponding functions to a given input vector
+    function h(x::Vector)
+        returnVec = Vector{}()
+        for (i, input) in enumerate(x)
+            push!(returnVec, functionList[i](input))
+        end
+        return returnVec
+    end
+
+    return h
 end
 
 
