@@ -212,17 +212,20 @@ Generate n valid samples from a specified distribution on the interval [0,1].
 
 """
 # Make able to sample BigFloats from Normal Distribution
-function sampling(n::Int, distribution::Distribution, precision=false, BFNorm=false) # Slow when distribution=Normal()
+function sampling(n::Int, distribution::Distribution, precision=false) # Slow when distribution=Normal()
     # If precision is true, we want to use BigFloat.
     if precision==true
-        # To randomly sample BigFloats from distribution, we use the inverse CDF function.
-        # Does not always work, depending on the given univariate distribution
-        uni=rand(BigFloat, n)
-        samples=quantile(distribution, uni)
-    elseif BFNorm==true
-        precision = 2^9  # Adjust as needed
-        dist = Normal(BigFloat(0, precision), BigFloat(1, precision))
-        samples = rand(dist, n)
+        if isa(distribution, Normal{Float64})
+            precision = 2^9  # Adjust as needed
+            dist = Normal(BigFloat(0, precision), BigFloat(1, precision))
+            samples = rand(dist, n)
+        else
+            # To randomly sample BigFloats from distribution, we use the inverse CDF function.
+            # Does not always work, depending on the given univariate distribution
+            uni=rand(BigFloat, n)
+            samples=quantile(distribution, uni)
+
+        end
     else
         samples = rand(distribution, n)
     end
@@ -232,36 +235,34 @@ function sampling(n::Int, distribution::Distribution, precision=false, BFNorm=fa
 end
 
 """
-    makeDistributionCross(functionList)
+    makeDistributionCross(distList)
 
-Constructs the distribution supported on cross product of domains from the given function list.
+Constructs the PDF of the distribution supported on the cross product of domains from the given distributions list.
 
 ## Arguments
-- `functionList`: List of functions that each act on a given domain.
+- `distList`: List of distributions that each are defined on a given domain.
 
 ## Returns
-- New described function acting as a distribution.
+- New described PDF for some new distribution.
 """
-function makeDistributionCross(functionList)
+function makeDistributionCross(distList, weights)
     # Return a function that applies corresponding functions to a given input vector
     function h(x::Vector)
         returnVec = Vector{}()
-        for (i, input) in enumerate(x)
-            push!(returnVec, functionList[i](input))
+        for (i, dist) in enumerate(distList)
+            push!(returnVec, pdf(dist, x[i]))
         end
-        return returnVec
+        
+        combinedVals = sum(returnVec .* weights)                     # Weighted sum of the PDF values
+        normalizationConstant = sum(weights)                    # Sum of the weights
+        adjustment = combinedVals / normalizationConstant       # Normalize the PDF to ensure it integrates to 1
+
+        return adjustment
     end
 
     return h
 end
 
-
-# function makeDistributionTorus                    Torus
-# function makeDistributionCrossProduct             Coordinate-Wise
-
-
-# Want to sum over a large box, whose size is specified by the user. (For makeDistributionTorus)
-# Also want a cross-product parameter (For makeDistributionCrossProduct)
 
 
 ####################################################################################
