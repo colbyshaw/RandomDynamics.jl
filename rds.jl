@@ -263,6 +263,54 @@ function makeDistributionCross(distList, weights)
     return h
 end
 
+"""
+    makeBigFloat(num::Float64, digits::Int64)
+
+Constructs a BigFloat number that approximates a given Float64 number by adding numbers up to the given digits amount.
+
+## Arguments
+- `num`: Some Float64 number (only about 14 decimal place precision).
+- 'digits': Number of digits to add to the original Float64 number.
+
+## Returns
+-  BigFloat number.
+"""
+function makeBigFloat(num::Float64, digits::Int64)
+    unif = Uniform()
+    strNum = string(num)
+
+    # Create blank array
+    newNumArray = [""]
+    for x in range(1, length(strNum) - 1)
+        push!(newNumArray,"")
+    end
+
+    # Replace each array with the character position of the given number
+    for i in range(1, length(strNum))
+        newNumArray[i] = string(strNum[i])
+    end
+
+    addDigits = Vector{}()
+    # Uniformly sample a digit from [0, 1, ..., 9] to add to the end of the sample
+    for i in 1:digits
+        push!(addDigits, string(Int(floor(10 * rand(unif)))))
+    end
+
+    # Add newly generated digits to the original number
+    for val in addDigits
+        push!(newNumArray, val)
+    end
+
+    # Make everything into one string
+    newString = ""
+    for dig in newNumArray
+        newString *= dig
+    end
+
+    # Convert to BigFloat
+    return parse(BigFloat, newString)
+end
+
 
 
 ####################################################################################
