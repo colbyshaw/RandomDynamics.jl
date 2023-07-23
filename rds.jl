@@ -26,6 +26,17 @@ mutable struct RDS
     func::Function               # fω (generic function)
 end
 
+"""
+    makeDistribution(M::RDSDomain, f::Distribution, truncation::Int64)
+
+Computes a new density, g, on our domain M given an initial distribuition f.
+
+## Fields
+- `M::RDSDomain`: Domain we are dealing with.
+- `f`: Initial multivariate distribuition.
+- `truncation::Int64`: Controls how accurate we want our new density, g, to be.
+
+"""
 function makeDistribution(M::RDSDomain, f::Distribution, truncation::Int64)
     if M.dim != length(f)
         throw(ArgumentError("Dimension for domains of M and f must match!"))
@@ -41,14 +52,11 @@ function makeDistribution(M::RDSDomain, f::Distribution, truncation::Int64)
         for elt in Iterators.product(fill(range, length(modulos))...)
             # Take into account the modulo of our domain M.
             vals = collect(elt)
-            #println("translator vector non zero values: $vals and zeros: $zero")
             translator[zero] .= 0
             translator[modulos] = vals
-            #println("translator vector: $translator, and total: $total")
             if translator != zeros(M.dim)
                 total += pdf(f, x .+ translator)
             end
-            #println("new total: $total.")
         end
         return total
     end
@@ -84,7 +92,7 @@ Make sure our field `func` for our RDS is defined :
 
 This is to assure our function fω works properly.
 """
-function sampleTraj(system::RDS, x0, n::Int64, type="quenched", RO=false) 
+function sampleTraj(system::RDS, x0, n::Int64; type="quenched", RO=false) 
     if n <= 0
         throw(DomainError(n, "The number of iterations, $n, must be nonnegative."))
     end
@@ -103,13 +111,15 @@ function sampleTraj(system::RDS, x0, n::Int64, type="quenched", RO=false)
             curr = [mod(system.func(ω, x), 1) for x in curr]  # e.g. curr = x1 = f\_ω₁(x0)
             push!(traj, curr)   # add Xₖ to traj
         end
-        if R0 == true
+        if RO == true
             return [SVector{n}(traj), SVector{n}(omegas)]
         end
     elseif type == "annealed"
         for i in 1:n
             newtraj = []
-            curr = traj[i]
+            if i != 1
+                curr = traj[i-1]
+            end
             omegas = rand(system.LawOfSamples, length(x0))
             for (j, x) in enumerate(curr)
                 push!(newtraj, mod(system.func(omegas[j], x), 1))
@@ -129,10 +139,6 @@ Compute a time series of data points using the given random dynamical system (`r
 ## Arguments
 - `traj::AbstractVector`: Trajectory.
 - `ϕ::Function`: Function used to create our timeseries.
-
-
-## Returns
-- `timeseries`: A time series of transformed data points.
 
 """
 function timeseries(traj::AbstractVector, ϕ::Function)
@@ -187,14 +193,22 @@ Generate n valid samples from a specified distribution on the interval [0,1].
 ## Arguments
 - `n::Int`: The number of samples to generate.
 - `distribution::Distribution`: The distribution from which to generate the samples.
-= `precision`: Key parameter determining precision of sample.
+- `precision`: Key parameter determining precision of sample.
+- 'BFNorm': Key parameter used if want BigFloat samples from the Standard Normal Distribution.
 """
-function sampling(n::Int, distribution::Distribution; precision=false) # Slow when distribution=Normal()
-    # If precision is want, we use BigFloat.
+function sampling(n::Int, distribution::Distribution; precision=false) 
+    # If precision is true, we want to use BigFloat.
     if precision==true
         # To randomly sample BigFloats from distribution, we use the inverse CDF function.
-        uni=rand(BigFloat, n)           
-        samples=quantile(distribution, uni)
+        # Does not always work, depending on the given univariate distribution
+        if isa(distribution, Normal)
+            precision=2^9
+            dist = Normal(BigFloat(0, precision), BigFloat(1, precision))
+            samples = rand(dist, n)
+        else
+            uni=rand(BigFloat, n)
+            samples=quantile(distribution, uni)
+        end
     else
         samples = rand(distribution, n)
     end
@@ -202,4 +216,3 @@ function sampling(n::Int, distribution::Distribution; precision=false) # Slow wh
     valid_samples = filter(x -> 0 ≤ x ≤ 1, transformed_samples)  # Filter out values outside [lower, upper]
     return valid_samples
 end
-
