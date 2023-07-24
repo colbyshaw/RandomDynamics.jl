@@ -25,7 +25,7 @@ Use a Vector of tuples of the following form:
 - 'modulo_coordinates': Vector of Boolean decisions to have the coordinates be in modulo 1 or not
 
 """
-struct RDSDomain
+mutable struct RDSDomain
     dim::Int
     modulo_coordinates::Vector{Bool}
 end
@@ -47,6 +47,43 @@ struct RDS
 end
 
 # Not using 'ObservedRDS' type anymore because of updated sampleTraj implementation
+
+"""
+    makeDistribution(M::RDSDomain, f::Distribution, truncation::Int64)
+
+Computes a new density, g, on our domain M given an initial distribuition f.
+
+## Fields
+- `M::RDSDomain`: Domain we are dealing with.
+- `f`: Initial multivariate distribuition.
+- `truncation::Int64`: Controls how accurate we want our new density, g, to be.
+
+"""
+function makeDistribution(M::RDSDomain, f::Distribution, truncation::Int64)
+    if M.dim != length(f)
+        throw(ArgumentError("Dimension for domains of M and f must match!"))
+    end
+
+    function g(x::Vector)
+        range = -truncation:truncation
+        total = pdf(f, x)
+        zero = [i for i in 1:length(M.modulo_coordinates) if M.modulo_coordinates[i] == false]
+        modulos = [i for i in 1:length(M.modulo_coordinates) if M.modulo_coordinates[i] == true]
+        translator = Vector{}(undef, M.dim)
+
+        for elt in Iterators.product(fill(range, length(modulos))...)
+            # Take into account the modulo of our domain M.
+            vals = collect(elt)
+            translator[zero] .= 0
+            translator[modulos] = vals
+            if translator != zeros(M.dim)
+                total += pdf(f, x .+ translator)
+            end
+        end
+        return total
+    end
+    return g 
+end
 
 """
     struct PhaseSpaceDomainException <: Exception
