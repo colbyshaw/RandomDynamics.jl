@@ -127,54 +127,33 @@ Compute a time series of data points using the given trajectory 'traj' and funct
 
 """
 function timeseries(traj::AbstractVector, ϕ::Function)
-    timeseries = Vector{}()
-    count = 0               # Ensures the first initial state x0 does not have ϕ applied to it
-    for pos in traj         # Change to enumerate as in function below
-        if count == 0
-            push!(timeseries, pos)
-            continue
-        end
-        tmp = Vector{}()  # tmp = Vector{Float64}()
-        for data in pos
-            push!(tmp, ϕ(data))
-        end
-        # push!(timeseries, ϕ.(pos))   # See if ϕ can be applied to every step
-        push!(timeseries, tmp)
-        count += 1
-    end
-           
-    return SVector{length(traj)}(timeseries)
+    return SVector{length(traj)}([ϕ.(pos) for pos in traj])
 end
 
 """
-    timeseries(traj::AbstractVector, omegas::AbstractVector, ϕω::Function)
+    timeseries(traj::AbstractVector, ϕω::Function, omegas::AbstractVector)
 
-Compute a time series of data points using the given trajectory 'traj', omega values 'omegas' used, and the random observable function 'ϕω'.
+Compute a time series of data points using the given trajectory 'traj', the random observable function 'ϕω', and the omega values 'omegas' used,.
 
 ## Arguments
 - `traj`: Trajectory.
-- 'omegas': Omega values used during the creation of the trajectory.
 - `ϕω`: A function to apply to each data point using the ω values provided.
+- 'omegas': Omega values used during the creation of the trajectory.
 
 ## Returns
 - `timeseries`: A time series of transformed data points.
 
 """
-function timeseries(traj::AbstractVector, omegas::AbstractVector, ϕω::Function)
+function timeseries(traj::AbstractVector, ϕω::Function, omegas::AbstractVector)
     timeseries = Vector{}()
     for (i, pos) in enumerate(traj)
-        if i == 1           # Ensures the first initial state x0 does not have ϕ applied to it
+        if i == 1
             push!(timeseries, pos)
             continue
         end
-        tmp = Vector{}()  # tmp = Vector{Float64}()
-        for data in pos
-            push!(tmp, ϕω(omegas[i - 1], data))
-        end
-        # push!(timeseries, ϕω.(pos))   # See if ϕ can be applied to every step
-        push!(timeseries, tmp)
+        push!(timeseries, ϕω.(omegas[i - 1], pos))
     end
-           
+
     return SVector{length(traj)}(timeseries)
 end
 
