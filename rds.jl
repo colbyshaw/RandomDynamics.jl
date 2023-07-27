@@ -49,43 +49,6 @@ end
 # Not using 'ObservedRDS' type anymore because of updated sampleTraj implementation
 
 """
-    makeDistribution(M::RDSDomain, f::Distribution, truncation::Int64)
-
-Computes a new density, g, on our domain M given an initial distribuition f.
-
-## Fields
-- `M::RDSDomain`: Domain we are dealing with.
-- `f`: Initial multivariate distribuition.
-- `truncation::Int64`: Controls how accurate we want our new density, g, to be.
-
-"""
-function makeDistribution(M::RDSDomain, f::Distribution, truncation::Int64)
-    if M.dim != length(f)
-        throw(ArgumentError("Dimension for domains of M and f must match!"))
-    end
-
-    function g(x::Vector)
-        range = -truncation:truncation
-        total = pdf(f, x)
-        zero = [i for i in 1:length(M.modulo_coordinates) if M.modulo_coordinates[i] == false]
-        modulos = [i for i in 1:length(M.modulo_coordinates) if M.modulo_coordinates[i] == true]
-        translator = Vector{}(undef, M.dim)
-
-        for elt in Iterators.product(fill(range, length(modulos))...)
-            # Take into account the modulo of our domain M.
-            vals = collect(elt)
-            translator[zero] .= 0
-            translator[modulos] = vals
-            if translator != zeros(M.dim)
-                total += pdf(f, x .+ translator)
-            end
-        end
-        return total
-    end
-    return g 
-end
-
-"""
     struct PhaseSpaceDomainException <: Exception
 
 An exception type representing an error related to the phase space domain.
@@ -216,7 +179,7 @@ function empiricalAverage(traj::AbstractVector)
 end
 
 """
-    sampling(n::Int, distribution::Distribution)
+    sampling(n::Int, distribution::Distribution, precision=false)
 
 Generate n valid samples from a specified distribution on the interval [0,1].
 
@@ -224,11 +187,9 @@ Generate n valid samples from a specified distribution on the interval [0,1].
 - `n::Int`: The number of samples to generate.
 - `distribution::Distribution`: The distribution from which to generate the samples.
 - `precision`: Key parameter determining precision of sample.
-- 'BFNorm': Used if want BigFloat samples from the Standard Normal Distribution.
 
 """
-# Make able to sample BigFloats from Normal Distribution
-function sampling(n::Int, distribution::Distribution, precision=false) # Slow when distribution=Normal()
+function sampling(n::Int, distribution::Distribution, precision=false)
     # If precision is true, we want to use BigFloat.
     if precision==true
         if isa(distribution, Normal{Float64})
@@ -251,17 +212,55 @@ function sampling(n::Int, distribution::Distribution, precision=false) # Slow wh
 end
 
 """
-    makeDistributionCross(distList)
+    makeDistribution(M::RDSDomain, f::Distribution, truncation::Int64)
+
+Computes a new density, g, on our domain M given an initial distribuition f.
+
+## Fields
+- `M::RDSDomain`: Domain we are dealing with.
+- `f`: Initial multivariate distribuition.
+- `truncation::Int64`: Controls how accurate we want our new density, g, to be.
+
+"""
+function makeDistribution(M::RDSDomain, f::Distribution, truncation::Int64)
+    if M.dim != length(f)
+        throw(ArgumentError("Dimension for domains of M and f must match!"))
+    end
+
+    function g(x::Vector)
+        range = -truncation:truncation
+        total = pdf(f, x)
+        zero = [i for i in 1:length(M.modulo_coordinates) if M.modulo_coordinates[i] == false]
+        modulos = [i for i in 1:length(M.modulo_coordinates) if M.modulo_coordinates[i] == true]
+        translator = Vector{}(undef, M.dim)
+
+        for elt in Iterators.product(fill(range, length(modulos))...)
+            # Take into account the modulo of our domain M.
+            vals = collect(elt)
+            translator[zero] .= 0
+            translator[modulos] = vals
+            if translator != zeros(M.dim)
+                total += pdf(f, x .+ translator)
+            end
+        end
+        return total
+    end
+    return g 
+end
+
+"""
+    makeDistributionCross(distList::Vector, weights)
 
 Constructs the PDF of the distribution supported on the cross product of domains from the given distributions list.
 
 ## Arguments
 - `distList`: List of distributions that each are defined on a given domain.
+- 'weights': Weights to apply to each distribution for the final PDF.
 
 ## Returns
 - New described PDF for some new distribution.
 """
-function makeDistributionCross(distList, weights)
+function makeDistributionCross(distList::Vector, weights)
     # Return a function that applies corresponding functions to a given input vector
     function h(x::Vector)
         returnVec = Vector{}()
@@ -326,18 +325,3 @@ function makeBigFloat(num::Float64, digits::Int64)
     # Convert to BigFloat
     return parse(BigFloat, newString)
 end
-
-
-
-####################################################################################
-
-"""
-
-Additional Implementations
-
-- Expectation of Random Observable
-- Other statistics to RO
-
-"""
-
-####################################################################################
