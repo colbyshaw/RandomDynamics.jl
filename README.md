@@ -2,10 +2,6 @@
 
 Welcome to the Random Dynamics package! This package was created to run simulations and trajectory tracking of Random Dynamical Systems, abbreviated as 'RDS' (or 'rds') throughout the code. Colby Shaw and Ethan Botelho created this code with the help of Dr. Jorge Gonzalez during the summer of 2023 as a research project conducted by Dr. Alex Blumenthal at the Georgia Institute of Technology.
 
-# Goal
-
-
-
 # Functions
 
 Here are a list of the functions that you will find in the 'rds.jl' file; please consult this file and the documentation within for specific usage.
