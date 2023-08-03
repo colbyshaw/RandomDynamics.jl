@@ -64,6 +64,35 @@ function makeDistribution(M::RDSDomain, f::Distribution, truncation::Int64)
 end
 
 """
+    makeDistributionCross(distList)
+
+Constructs the PDF of the distribution supported on the cross product of domains from the given distributions list.
+
+## Arguments
+- `distList`: List of distributions that each are defined on a given domain.
+
+## Returns
+- New described PDF for some new distribution.
+"""
+function makeDistributionCross(distList, weights)
+    # Return a function that applies corresponding functions to a given input vector
+    function h(x::Vector)
+        returnVec = Vector{}()
+        for (i, dist) in enumerate(distList)
+            push!(returnVec, pdf(dist, x[i]))
+        end
+        
+        combinedVals = sum(returnVec .* weights)                # Weighted sum of the PDF values
+        normalizationConstant = sum(weights)                    # Sum of the weights
+        adjustment = combinedVals / normalizationConstant       # Normalize the PDF to ensure it integrates to 1
+
+        return adjustment
+    end
+
+    return h
+end
+
+"""
     struct PhaseSpaceDomainException <: Exception
 
 An exception type representing an error related to the phase space domain.
@@ -156,7 +185,7 @@ Computes a Random Observable dependent on our vector of omegas, ϕ, and traj.
 - `ϕ::Function`: Function used to create our timeseries.
 
 """
-function timeseries(traj::AbstractVector, omegas::AbstractVector, ϕ::Function)
+function timeseries(traj::AbstractVector, ϕ::Function, omegas::AbstractVector)
     timeseries = Vector{}()
     for (i, pos) in enumerate(traj)
         push!(timeseries, ϕ.(omegas[i], pos))
@@ -215,4 +244,52 @@ function sampling(n::Int, distribution::Distribution; precision=false)
     transformed_samples = (samples .- minimum(samples)) / (maximum(samples) - minimum(samples))  # Transform samples to the interval [0, 1]
     valid_samples = filter(x -> 0 ≤ x ≤ 1, transformed_samples)  # Filter out values outside [lower, upper]
     return valid_samples
+end
+
+"""
+    makeBigFloat(num::Float64, digits::Int64)
+
+Constructs a BigFloat number that approximates a given Float64 number by adding numbers up to the given digits amount.
+
+## Arguments
+- `num`: Some Float64 number (only about 14 decimal place precision).
+- 'digits': Number of digits to add to the original Float64 number.
+
+## Returns
+-  BigFloat number.
+"""
+function makeBigFloat(num::Float64, digits::Int64)
+    unif = Uniform()
+    strNum = string(num)
+
+    # Create blank array
+    newNumArray = [""]
+    for x in range(1, length(strNum) - 1)
+        push!(newNumArray,"")
+    end
+
+    # Replace each array with the character position of the given number
+    for i in range(1, length(strNum))
+        newNumArray[i] = string(strNum[i])
+    end
+
+    addDigits = Vector{}()
+    # Uniformly sample a digit from [0, 1, ..., 9] to add to the end of the sample
+    for i in 1:digits
+        push!(addDigits, string(Int(floor(10 * rand(unif)))))
+    end
+
+    # Add newly generated digits to the original number
+    for val in addDigits
+        push!(newNumArray, val)
+    end
+
+    # Make everything into one string
+    newString = ""
+    for dig in newNumArray
+        newString *= dig
+    end
+
+    # Convert to BigFloat
+    return parse(BigFloat, newString)
 end

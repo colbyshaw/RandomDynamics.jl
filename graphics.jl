@@ -49,21 +49,12 @@ function tracking(traj::AbstractVector)
     # Record and display distribution evolution over time.
     @gif for i in eachindex(traj) 
         histogram(traj[i], xlims=(0,1), bins=100, xlabel="Values", ylabel="Frequency", legend=false) 
-    end fps = 8
+    end fps = 4
 end
    
 function distDisplay(M::RDSDomain, f::Distribution, xrange::AbstractRange, yrange::AbstractRange, truncation::Int64)
-    @gif for i in 1:truncation
-        g = makeDistribution(M, f, i)
-        zs = [g([xs,ys]) for ys in yrange, xs in xrange]
-        surface(x, y, zs, xlabel="X", ylabel="Y", zlabel="Z", title="Density on M.")
-    end fps = 2
+    g = makeDistribution(M, f, truncation)
+    zs = [g([xs,ys]) for ys in yrange, xs in xrange]
+    surface(xrange, yrange, zs, zlims=(.3,1), xlabel="X", ylabel="Y", zlabel="Z", title="Density on M.")
 end
-
-dom = RDSDomain(2, [true, false])
-f = MultivariateNormal([0, 0], [1 0.0; 0.0 1])
-# Generate grid points for plotting
-x = 0:.1:1
-y = -4:.1:4
-
-distDisplay(dom , f, x, y, 5)
+ 
