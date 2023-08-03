@@ -6,14 +6,31 @@ Welcome to the Random Dynamics package! This package was created to run simulati
 
 Here are a list of the functions that you will find in the 'rds.jl' file; please consult this file and the documentation within for specific usage.
 
+## rds.jl
 - sampleTraj (Three Required Arguments, Two Default Arguments)
+    - Returns the trajectory of a given sample with respect to the given RDS and function.
 - timeSeries (Two Required Arguments)
+    - Returns a time series calculation for a given trajectory and observable.
 - timeSeries (Three Required Arguments)
+    - Returns a time series calculation for a given trajectory and random observable.
 - empiricalAverage (One Required Argument)
+    - Computes the empirical average of a trajectory.
 - sampling (Two Required Arguments, One Default Argument)
+    - Samples the indicated number of values from the given distribution.
 - makeDistribution (Three Required Arguments)
+    - Returns a function for estimating a change of domain from a given function to a domain with intervals modulo 1.
 - makeDistributionCross (Two Required Arguments)
+    - Returns a function combining given distributions with different weights.
 - makeBigFloat (Two Required Arguments)
+    - Creates a BigFloat approximation for a given Float64 number.
+
+## graphics.jl
+- testing (One Required Argument)
+    - Plots the trajectory of a given trajectory.
+- tracking (One Required Argument)
+    - Creates a gif tracking the evolution of a given trajectory.
+- distDisplay (Five Required Arguments)
+    - Plots a surface plot for given domains and distributions up to the certain given approximation.
 
 # Usage
 
