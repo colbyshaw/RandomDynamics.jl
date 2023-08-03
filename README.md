@@ -39,5 +39,5 @@ For specific examples regarding these functions and defined structures, please s
 # Issues
 
 For any issues or bugs in the code found, feel free to contact us at:
-- Ethan: ebotelho7@gatech.edu (ethanmbotelho@gmail.com)
+- Ethan: ebotelho7@gatech.edu (or ethanmbotelho@gmail.com)
 - Colby: cshaw44@gatech.edu (or colbythoshaw@gmail.com)
