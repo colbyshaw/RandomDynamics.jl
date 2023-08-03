@@ -2,6 +2,8 @@
 
 Welcome to the Random Dynamics package! This package was created to run simulations and trajectory tracking of Random Dynamical Systems, abbreviated as 'RDS' (or 'rds') throughout the code. Colby Shaw and Ethan Botelho created this code with the help of Dr. Jorge Gonzalez during the summer of 2023 as a research project conducted by Dr. Alex Blumenthal at the Georgia Institute of Technology.
 
+We have two versions for the main RDS code: rdsV1 (including the initial condition) and rdsV2 (not including the initial condition).
+
 # Functions
 
 Here are a list of the functions that you will find in the 'rds.jl' file; please consult this file and the documentation within for specific usage.
@@ -29,8 +31,6 @@ Here are a list of the functions that you will find in the 'rds.jl' file; please
     - Plots the trajectory of a given trajectory.
 - tracking (One Required Argument)
     - Creates a gif tracking the evolution of a given trajectory.
-- distDisplay (Five Required Arguments)
-    - Plots a surface plot for given domains and distributions up to the certain given approximation.
 
 # Usage
 
@@ -39,5 +39,5 @@ For specific examples regarding these functions and defined structures, please s
 # Issues
 
 For any issues or bugs in the code found, feel free to contact us at:
-- Ethan: ethanmbotelho@gmail.com
-- Colby:
+- Ethan: ebotelho7@gatech.edu (ethanmbotelho@gmail.com)
+- Colby: cshaw44@gatech.edu (or colbythoshaw@gmail.com)
